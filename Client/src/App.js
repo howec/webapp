@@ -24,9 +24,9 @@ class App extends Component{
     console.log(props.data);
 
     /* 
-    page values: login, students, staff, partners
+    page values: Login, Students, Staff, Partners
     */
-    this.state = {loggedIn: false, profile: null, page: 'login', data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
+    this.state = {loggedIn: false, profile: null, page: 'Login', data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
 
     // const socket = this.socket;
     // console.log("LOOK HERE: " + socket);
@@ -35,9 +35,15 @@ class App extends Component{
   }
 
 
-  onSignIn = (googleUser) => {
+  onSignIn = (googleUser, pageName) => {
+    console.log("SignedIn");
+
     this.setState({loggedIn: true});
+
     console.log("signed in! " + this.state.loggedIn);
+
+
+
 
     this.setState({profile: googleUser.getBasicProfile()});
 
@@ -64,16 +70,34 @@ class App extends Component{
   }
 
 
-//componentDidUpdate
-//if 
+  toLogin = () =>{
+    console.log("In 1");
+    if(this.state.loggedIn == true){
+      this.setState({page: "Login"})
+    }
+  }
+  toStaff = () =>{
+        console.log("In 2");
 
-  // componentDidMount(){
-  //   socket.on("sendingattempt", req => {
-  //     this.state.data = [req.attempt];
-  //     this.setState(this.state);
-  //   });
-  // }
+    if(this.state.loggedIn == true){
+      this.setState({page: "Staff"})
+    }
+  }
+  toStudents = () =>{
+    console.log("In 3");
 
+    if(this.state.loggedIn == true){
+      this.setState({page: "Students"})
+    }
+  }
+  toPartners = () =>{
+        console.log("In 4");
+
+    if(this.state.loggedIn == true){
+      this.setState({page: "Partners"})
+    }
+
+  }
 
 /*
   failsafe way: store the pages as things in divs, and render everything but selectively hide
@@ -82,53 +106,17 @@ class App extends Component{
   render(){
     return (
       <div>
-        <NavigationBar />
+        <NavigationBar loggedIn = {this.state.loggedIn} page = {this.state.page} toLogin = {this.toLogin} toPartners ={this.toPartners} toStaff = {this.toStaff} toStudents = {this.toStudents}/>
 
-        <Login page = {this.state.page} />
-        <Staff page = {this.state.page} />
-        <Students page = {this.state.page} />
-        <Partners page = {this.state.page} />
+        <Login loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Staff loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Students loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Partners loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
 
       </div>
 
 
       )
-
-
-/*
-    return(
-      <div>
-      <NavigationBar loggedIn = {this.state.loggedIn}/>
-
-      <Router>
-        <Switch>
-          <Route exact path="/" >
-            <Login loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut}/>
-          </Route>
-          
-          <Route exact path="/Login">
-            <Login loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut}/>
-          </Route>
-
-          <Route exact path="/staff" >
-            <Staff/>
-          </Route>
-
-          <Route exact path="/students" >
-            <Students/>
-          </Route>
-
-          <Route exact path="/partners">
-            <Partners/>
-          </Route>
-
-        </Switch>
-       </Router>
-
-    </div>
-
-
-    */
   }
 
 }
@@ -136,21 +124,21 @@ class App extends Component{
 
 export default App;
 
-var test = document.getElementById("test");
+// var test = document.getElementById("test");
 
-test.addEventListener("click", function(){
-  socket.emit("createWorkspace", "NAME", "URL");
-  console.log("Clicked workspace button");
-});
+// test.addEventListener("click", function(){
+//   socket.emit("createWorkspace", "NAME", "URL");
+//   console.log("Clicked workspace button");
+// });
 
-console.log('before the emission');
-socket.emit('test', {testing: "0000"});
+// console.log('before the emission');
+// socket.emit('test', {testing: "0000"});
 
-socket.on("sendingattempt", function(data){
-  console.log("sending from within app.js");
-  console.log(data.attempt);
+// socket.on("sendingattempt", function(data){
+//   console.log("sending from within app.js");
+//   console.log(data.attempt);
 
-});
+// });
 
 
 

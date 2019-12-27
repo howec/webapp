@@ -12,10 +12,10 @@ class Partners extends Component {
   }
 
   render() {
-  	if(this.props.page == 'Students'){
+  	if(this.props.page == 'Partners'){
 	    return (
 	    	<div>
-				<h1> STUDENT STUFF ARJHSD </h1>
+				<h1> partners page </h1>
 		    </div>
 	    	)
 		}

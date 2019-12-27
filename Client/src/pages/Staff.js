@@ -11,7 +11,7 @@ class Staff extends Component {
   }
 
   render() {
-  	if(this.props.page == 'Students'){
+  	if(this.props.page == 'Staff'){
 	    return (
 	    	<div>
 				<h1> Staff Page! </h1>
