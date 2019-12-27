@@ -72,6 +72,11 @@ io.on('connection', function(socket){
 		console.log('a user disconnected:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
 
+	socket.on('loggedout', function(){
+		delete activeUsers[socket.id];
+		console.log('a user logged out:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
+	});
+
 
 	socket.on('FINALLY', function(data){
 		console.log(data.msg + " SocketID is: " + socket.id);

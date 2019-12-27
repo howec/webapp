@@ -18,10 +18,32 @@ class NavigationBar extends Component {
   }
 
 
+  createNavBar = (arg) =>{
+  	let navbar = [];
 
+  	console.log("in createNavBar");
+  	for(const [func, name] of arg){
+  		console.log("" + func);
+  		console.log(name);
+  		navbar.push(
 
+		          <li className="nav-item">
+		            <a className="nav-link" onClick = {func}>{name}</a>
+		          </li>
+  			);
+  	}
+
+  	return navbar;
+
+  }
 
   render() {
+
+
+  	// console.log("LOOK HERE: " + this.props.toLogin[1])
+
+  	// this.createNavBar(this.props.stuffTest);
+
   	if(this.props.loggedIn == false){
     return (
 		<div>
@@ -59,22 +81,15 @@ class NavigationBar extends Component {
 		        <span className="navbar-toggler-icon"></span>
 		      </button>
 
-		      <div className="collapse navbar-collapse" id="navbarsExample03">
-		        <ul className="navbar-nav mr-auto">
+		      <div className="collapse navbar-collapse justify-content-end" id="navbarsExample03">
+		        <ul className="navbar-nav">
 
 
-		          <li className="nav-item active">
-		            <a className="nav-link" onClick = {this.props.toLogin}>Home<span className="sr-only">(current)</span></a>
-		          </li>
-		          <li className="nav-item">
-		            <a className="nav-link" onClick = {this.props.toStaff}>Staff</a>
-		          </li>
-		          <li className="nav-item">
-		            <a className="nav-link" onClick = {this.props.toStudents}>Students</a>
-		          </li>
-  		          <li className="nav-item">
-		            <a className="nav-link" onClick = {this.props.toPartners}>Partners</a>
-		          </li>
+		        {this.createNavBar(this.props.navbarItems)}
+
+
+
+
 		          <li className="nav-item dropdown">
 		            <a className="nav-link dropdown-toggle" href="http://example.com/" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">FILLER DROPDOWN</a>
 		            <div className="dropdown-menu" aria-labelledby="dropdown03">

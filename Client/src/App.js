@@ -67,6 +67,8 @@ class App extends Component{
     auth2.signOut().then(function () {
       console.log('User signed out.');
     });
+
+    socket.emit('loggedout', {});
   }
 
 
@@ -106,7 +108,7 @@ class App extends Component{
   render(){
     return (
       <div>
-        <NavigationBar loggedIn = {this.state.loggedIn} page = {this.state.page} toLogin = {this.toLogin} toPartners ={this.toPartners} toStaff = {this.toStaff} toStudents = {this.toStudents}/>
+        <NavigationBar loggedIn = {this.state.loggedIn} page = {this.state.page} navbarItems = {[[this.toLogin, "Home"], [this.toPartners, "Partners"], [this.toStaff, "Staff"], [this.toStudents, "Students"]]}/>
 
         <Login loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Staff loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
