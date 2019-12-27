@@ -4,6 +4,7 @@ import {Link} from 'react-router-dom';
 import GoogleLogin from 'react-google-login';
 
 import socket from '../components/SocketUser';
+import NavigationBar from '../components/NavigationBar'
 
 
 
@@ -37,11 +38,14 @@ class Login extends Component {
 
   render() {
     // if on the "Login" page
-    if(this.props.page == "Login"){
-
+    if(this.props.group == null){
       if(this.props.loggedIn == false){
+
       return(
+
         <div>
+          <NavigationBar loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
+
 
           <div>
             <h1> LOGIN PAGE </h1>

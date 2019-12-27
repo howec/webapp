@@ -1,3 +1,7 @@
+//this.props.loggedIn
+//this.props.navbarItems
+//this.props.onSignOut
+
 import React, { Component } from 'react'
 import {Link} from 'react-router-dom';
 import 'bootstrap';
@@ -88,12 +92,10 @@ class NavigationBar extends Component {
 		        {this.createNavBar(this.props.navbarItems)}
 
 
-
-
 		          <li className="nav-item dropdown">
-		            <a className="nav-link dropdown-toggle" href="http://example.com/" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">FILLER DROPDOWN</a>
-		            <div className="dropdown-menu" aria-labelledby="dropdown03">
-		              <a className="dropdown-item" href="https://getbootstrap.com/docs/4.0/examples/navbars/#">Action</a>
+		            <a className="nav-link dropdown-toggle" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
+		            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown03">
+		              <a className="dropdown-item" onClick = {this.props.onSignOut}>Logout</a>
 		              <a className="dropdown-item" href="https://getbootstrap.com/docs/4.0/examples/navbars/#">Another action</a>
 		              <a className="dropdown-item" href="https://getbootstrap.com/docs/4.0/examples/navbars/#">Something else here</a>
 		            </div>

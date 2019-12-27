@@ -4,12 +4,11 @@ import {Link} from 'react-router-dom';
 import GoogleLogin from 'react-google-login';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
-import NavigationBar from './components/NavigationBar'
 
 import Login from './pages/Login'
-import Partners from './pages/Partners'
-import Staff from './pages/Staff';
-import Students from './pages/Students';
+import Partners from './pages/Partners/Partners'
+import Staff from './pages/Staff/Staff';
+import Students from './pages/Students/Students';
 
 import socket from './components/SocketUser';
 // import Table from './components/Table'
@@ -26,7 +25,8 @@ class App extends Component{
     /* 
     page values: Login, Students, Staff, Partners
     */
-    this.state = {loggedIn: false, profile: null, page: 'Login', data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
+    this.state = {loggedIn: false, group: null, profile: null, page: 'Login', data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
+
 
     // const socket = this.socket;
     // console.log("LOOK HERE: " + socket);
@@ -36,13 +36,16 @@ class App extends Component{
 
 
   onSignIn = (googleUser, pageName) => {
+    //should I be configuring a "group?"
+
     console.log("SignedIn");
-
     this.setState({loggedIn: true});
-
     console.log("signed in! " + this.state.loggedIn);
 
-
+    //!!!!!TODO: some function to tell you what group the person belongs in
+    this.setState({group: "Partners"})
+    console.log("new group is: " + this.state.group);
+    console.log("signed in! " + this.state.loggedIn);
 
 
     this.setState({profile: googleUser.getBasicProfile()});
@@ -61,7 +64,7 @@ class App extends Component{
 
   onSignOut = () => {
     console.log("INSIDE THE SIGNOUT FUNCTION");
-    this.setState({loggedIn: false});
+    this.setState({loggedIn: false, group: null});
 
     var auth2 = window.gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
@@ -72,34 +75,6 @@ class App extends Component{
   }
 
 
-  toLogin = () =>{
-    console.log("In 1");
-    if(this.state.loggedIn == true){
-      this.setState({page: "Login"})
-    }
-  }
-  toStaff = () =>{
-        console.log("In 2");
-
-    if(this.state.loggedIn == true){
-      this.setState({page: "Staff"})
-    }
-  }
-  toStudents = () =>{
-    console.log("In 3");
-
-    if(this.state.loggedIn == true){
-      this.setState({page: "Students"})
-    }
-  }
-  toPartners = () =>{
-        console.log("In 4");
-
-    if(this.state.loggedIn == true){
-      this.setState({page: "Partners"})
-    }
-
-  }
 
 /*
   failsafe way: store the pages as things in divs, and render everything but selectively hide
@@ -108,12 +83,11 @@ class App extends Component{
   render(){
     return (
       <div>
-        <NavigationBar loggedIn = {this.state.loggedIn} page = {this.state.page} navbarItems = {[[this.toLogin, "Home"], [this.toPartners, "Partners"], [this.toStaff, "Staff"], [this.toStudents, "Students"]]}/>
 
-        <Login loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Staff loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Students loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Partners loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Login  group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Staff group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Students group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Partners group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
 
       </div>
 
