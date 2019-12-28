@@ -6,9 +6,9 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 
 import Login from './pages/Login'
-import Partners from './pages/Partners/Partners'
-import Staff from './pages/Staff/Staff';
-import Students from './pages/Students/Students';
+import Partners from './pages/partners/Partners'
+import Staff from './pages/staff/Staff';
+import Students from './pages/students/Students';
 
 import socket from './components/SocketUser';
 // import Table from './components/Table'
@@ -23,9 +23,9 @@ class App extends Component{
     console.log(props.data);
 
     /* 
-    page values: Login, Students, Staff, Partners
+    group values: null, Students, Staff, Partners
     */
-    this.state = {loggedIn: false, group: null, profile: null, page: 'Login', data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
+    this.state = {loggedIn: false, group: null, profile: null, data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
 
 
     // const socket = this.socket;
@@ -84,10 +84,10 @@ class App extends Component{
     return (
       <div>
 
-        <Login  group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Staff group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Students group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Partners group = {this.state.group} loggedIn = {this.state.loggedIn} page = {this.state.page} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Login  group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Staff group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Students group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Partners group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
 
       </div>
 

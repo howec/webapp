@@ -68,7 +68,7 @@ class Login extends Component {
       else{
         return (
           <div>
-            <h1> Logged in! </h1>
+            <h1> NOT SURE BUT IF IT GETS IN HERE THEN MAYBE THE USER WASN'T FOUND? </h1>
             <h2> create here </h2>
             <div></div>
             <button id = "SignOut" onClick = {this.props.onSignOut}> Sign Out Here </button> 

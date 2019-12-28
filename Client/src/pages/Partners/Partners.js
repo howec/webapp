@@ -3,11 +3,20 @@ import {Link} from 'react-router-dom';
 
 import NavigationBar from '../../components/NavigationBar'
 
+import HomeSubpage from './subpages/Home'
+import ApplicantsSubpage from './subpages/Applicants'
+import ProfileSubpage from './subpages/Profile'
+
 
 class Partners extends Component {
 
   constructor(props){
     super(props);
+
+    /*
+      Page values: Home, Applicants, Profile
+    */
+    this.state = {page: "Home"}
 
   }
 
@@ -43,7 +52,14 @@ class Partners extends Component {
           <NavigationBar loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toApplicants, "Applicants"], [this.toProfile, "Profile"]]}/>
 
 
-				  <h1> partners page </h1>
+				  <h1> Partners page! </h1>
+
+          <HomeSubpage page = {this.state.page}/>
+          <ApplicantsSubpage page = {this.state.page}/>
+          <ProfileSubpage page = {this.state.page}/>
+
+
+
 		    </div>
 	    	)
 		}
