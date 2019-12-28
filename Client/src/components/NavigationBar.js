@@ -23,21 +23,23 @@ class NavigationBar extends Component {
 
 
   createNavBar = (arg) =>{
-  	let navbar = [];
+  	if(arg != null){
+	  	let navbar = [];
 
-  	console.log("in createNavBar");
-  	for(const [func, name] of arg){
-  		console.log("" + func);
-  		console.log(name);
-  		navbar.push(
+	  	console.log("in createNavBar");
+	  	for(const [func, name] of arg){
+	  		console.log("" + func);
+	  		console.log(name);
+	  		navbar.push(
 
-		          <li className="nav-item">
-		            <a className="nav-link" onClick = {func}>{name}</a>
-		          </li>
-  			);
-  	}
+			          <li className="nav-item">
+			            <a className="nav-link" onClick = {func}>{name}</a>
+			          </li>
+	  			);
+	  	}
 
-  	return navbar;
+	  	return navbar;
+  }
 
   }
 

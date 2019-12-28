@@ -7,6 +7,7 @@ import socket from '../../components/SocketUser';
 import NavigationBar from '../../components/NavigationBar'
 
 import Login from './subpages/Login'
+import Create from './subpages/Create'
 
 
 class Landing extends Component {
@@ -38,9 +39,12 @@ class Landing extends Component {
       //else do not show the "Login" page
       else if (this.state.page == "Create"){
         return (
-          <h1> Should be in Create now </h1>
+          <div>
+            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
+            <Create />
+        </div>
 
-          );
+        );
       }
       else{
         return (
