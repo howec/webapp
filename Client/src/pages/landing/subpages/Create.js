@@ -21,7 +21,7 @@ class Create extends Component {
 
 
 
-  createWorkspaceHandler = () => {
+  createWorkspaceHandler(){
     socket.emit("createWorkspace", "NAME", "URL");
     console.log("Clicked workspace button");
 
@@ -31,8 +31,18 @@ class Create extends Component {
     socket.on("sendingattempt", function(data){
     console.log("sending from within app.js");
     console.log(data.attempt);
-
     });
+
+    socket.on("workspaceStatus", function(data){
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+    })
+
+  }
+
+  formSubmit = () => {
+    this.createWorkspaceHandler();
+
+    this.props.toLanding();
 
   }
 
@@ -43,7 +53,7 @@ class Create extends Component {
                 <h1> Should be in Create now </h1>
                         <h2> create here </h2>
 
-            <button onClick = {this.createWorkspaceHandler}>Create a workspace</button>
+            <button onClick = {this.formSubmit}>Create a workspace</button>
           </div>
           );
     

@@ -115,10 +115,10 @@ io.on('connection', function(socket){
 
 			console.log("sdjalksdjas " + data + workspaceDictionary);
 			writeData(workspaceDictionary);	
-			socket.emit("workspaceStatus", "The workspace has been created!");
+			socket.emit("workspaceStatus", {msg: "The workspace whas been created!"});
 		}
 
-		socket.emit("workspaceStatus", "This workspace name has already been taken.");
+		socket.emit("workspaceStatus", {msg: "This workspace name has already been taken."});
 
 	});
 

@@ -22,6 +22,9 @@ class Landing extends Component {
     this.setState({page: "Create"});
   }
 
+  toLanding = () => {
+    this.setState({page: "Login"});
+  }
 
 
   render() {
@@ -41,7 +44,7 @@ class Landing extends Component {
         return (
           <div>
             <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
-            <Create />
+            <Create toLanding = {this.toLanding}/>
         </div>
 
         );
