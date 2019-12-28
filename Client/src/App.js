@@ -5,7 +5,7 @@ import GoogleLogin from 'react-google-login';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 
-import Login from './pages/Login'
+import Landing from './pages/landing/Landing'
 import Partners from './pages/partners/Partners'
 import Staff from './pages/staff/Staff';
 import Students from './pages/students/Students';
@@ -99,7 +99,7 @@ class App extends Component{
     return (
       <div>
 
-        <Login url = {["Applica", ""]} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Landing url = {["Applica", ""]} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Staff url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Students url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Partners url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />

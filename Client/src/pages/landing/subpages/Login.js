@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import {Link} from 'react-router-dom';
 import GoogleLogin from 'react-google-login';
 
-import socket from '../components/SocketUser';
-import NavigationBar from '../components/NavigationBar'
+import socket from '../../../components/SocketUser';
+import NavigationBar from '../../../components/NavigationBar'
 
 
 
-class Landing extends Component {
+class Login extends Component {
 
   constructor(props){
     super(props);
@@ -46,9 +46,6 @@ class Landing extends Component {
       return(
 
         <div>
-          <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
-
-
           <div>
             <h1> LOGIN PAGE </h1>
             <h2> create here </h2>
@@ -91,6 +88,6 @@ class Landing extends Component {
 
 
 
-export default Landing;
+export default Login;
 
 

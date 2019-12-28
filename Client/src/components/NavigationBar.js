@@ -60,9 +60,20 @@ class NavigationBar extends Component {
 
 		   <nav className="navbar navbar-expand-sm navbar-dark bg-dark">
 		      <a className="navbar-brand" href={this.props.url[1]}>{this.props.url[0]}</a>
+
+			<div className="collapse navbar-collapse justify-content-end" id="navbarsExample03">
+		        <ul className="navbar-nav">
+
+		        {this.createNavBar(this.props.navbarItems)}
+
+		        </ul>
+
+		    </div>
+
 		    </nav>
 
 		</div>
+
 
   		)
   	}
