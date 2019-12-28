@@ -59,7 +59,7 @@ class NavigationBar extends Component {
 			/>
 
 		   <nav className="navbar navbar-expand-sm navbar-dark bg-dark">
-		      <a className="navbar-brand" href="https://data.berkeley.edu">UC Berkeley Data Science</a>
+		      <a className="navbar-brand" href={this.props.url[1]}>{this.props.url[0]}</a>
 		    </nav>
 
 		</div>
@@ -67,8 +67,6 @@ class NavigationBar extends Component {
   		)
   	}
   	else{
-
-  		//this will return a generic navbar that needs to be split into three conditions...
     return (
 		<div>
 			<link
@@ -80,7 +78,8 @@ class NavigationBar extends Component {
 
 		   <nav className="navbar navbar-expand-sm navbar-dark bg-dark">
 
-		      <a className="navbar-brand" href="https://data.berkeley.edu">UC Berkeley Data Science</a>
+		      <a className="navbar-brand" href={this.props.url[1]}>{this.props.url[0]}</a>
+
 		      <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample03" aria-controls="navbarsExample03" aria-expanded="false" aria-label="Toggle navigation">
 		        <span className="navbar-toggler-icon"></span>
 		      </button>

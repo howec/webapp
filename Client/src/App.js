@@ -5,7 +5,8 @@ import GoogleLogin from 'react-google-login';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 
-import Login from './pages/Login'
+// import Landing from './pages/Landing'
+import Landing from './pages/landing/Landing'
 import Partners from './pages/partners/Partners'
 import Staff from './pages/staff/Staff';
 import Students from './pages/students/Students';
@@ -20,12 +21,11 @@ class App extends Component{
   constructor(props){
     super(props);
     console.log("in app constructor");
-    console.log(props.data);
 
     /* 
     group values: null, Students, Staff, Partners
     */
-    this.state = {loggedIn: false, group: null, profile: null, data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
+    this.state = {url: null, loggedIn: false, group: null, profile: null, data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
 
 
     // const socket = this.socket;
@@ -38,9 +38,18 @@ class App extends Component{
   onSignIn = (googleUser, pageName) => {
     //should I be configuring a "group?"
 
+
+    //!!!!!TODO: need to make a function to get the url stuff
+    let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
+    this.setState({url: urlStuff});
+
+
+
     console.log("SignedIn");
     this.setState({loggedIn: true});
     console.log("signed in! " + this.state.loggedIn);
+            console.log("URL: " + this.state.url);
+
 
     //!!!!!TODO: some function to tell you what group the person belongs in
     this.setState({group: "Partners"})
@@ -64,7 +73,7 @@ class App extends Component{
 
   onSignOut = () => {
     console.log("INSIDE THE SIGNOUT FUNCTION");
-    this.setState({loggedIn: false, group: null});
+    this.setState({loggedIn: false, group: null, url: null});
 
     var auth2 = window.gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
@@ -81,13 +90,15 @@ class App extends Component{
   
 */
   render(){
+    console.log("inside app.js render..... " + this.state.url);
+
     return (
       <div>
 
-        <Login  group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Staff group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Students group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Partners group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Landing url = {["Applica", ""]} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Staff url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Students url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Partners url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
 
       </div>
 

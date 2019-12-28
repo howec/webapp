@@ -8,7 +8,7 @@ import NavigationBar from '../components/NavigationBar'
 
 
 
-class Login extends Component {
+class Landing extends Component {
 
   constructor(props){
     super(props);
@@ -38,13 +38,15 @@ class Login extends Component {
 
   render() {
     // if on the "Login" page
+
+
     if(this.props.group == null){
       if(this.props.loggedIn == false){
 
       return(
 
         <div>
-          <NavigationBar loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
+          <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
 
 
           <div>
@@ -89,6 +91,6 @@ class Login extends Component {
 
 
 
-export default Login;
+export default Landing;
 
 
