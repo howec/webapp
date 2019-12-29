@@ -42,12 +42,14 @@ class Create extends Component {
   formSubmit = () => {
     this.createWorkspaceHandler();
 
-    this.props.toLanding();
+    this.props.toConfirmation();
 
   }
 
   render() {
     // if on the "Login" page
+    console.log("In create.js: " + this.props.page);
+    if(this.props.page == "Create"){
       return(
           <div>
                 <h1> Should be in Create now </h1>
@@ -56,7 +58,9 @@ class Create extends Component {
             <button onClick = {this.formSubmit}>Create a workspace</button>
           </div>
           );
-    
+    }else {
+      return null;
+    }    
 
     }
   }

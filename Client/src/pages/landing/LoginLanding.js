@@ -8,6 +8,7 @@ import NavigationBar from '../../components/NavigationBar'
 
 import Login from './subpages/Login'
 import Create from './subpages/Create'
+import Confirmation from './subpages/Confirmation'
 
 
 class Landing extends Component {
@@ -18,13 +19,17 @@ class Landing extends Component {
   }
 
 
-  toWorkspaceCreation = () => {
+  toCreate = () => {
     this.setState({page: "Create"});
   }
 
-  toLanding = () => {
+  toLogin = () => {
     this.setState({page: "Login"});
   }
+
+  toConfirmation = () => {
+    this.setState({page: "Confirmation"});
+  };
 
 
   render() {
@@ -33,22 +38,32 @@ class Landing extends Component {
       if(this.state.page == "Login"){
         return(
           <div>
-            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {[[this.toWorkspaceCreation, "Create a workspace"]]}/>
-            <Login url = {this.props.url} group = {this.props.group} loggedIn = {this.props.loggedIn} onSignIn = {this.props.onSignIn} onSignOut = {this.props.onSignOut} />
+            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {[[this.toCreate, "Create a workspace"]]}/>
+            <Login page = {this.state.page} onSignIn = {this.props.onSignIn}/>
           </div>
 
           );
       }
       //else do not show the "Login" page
       else if (this.state.page == "Create"){
+      console.log("In landing.js: " + this.state.page);
+
         return (
           <div>
             <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
-            <Create toLanding = {this.toLanding}/>
+            <Create page = {this.state.page} toConfirmation = {this.toConfirmation}/>
         </div>
 
         );
+      } else if (this.state.page == "Confirmation"){
+        return (
+          <div>
+            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
+            <Confirmation page = {this.state.page} toLanding = {this.toLogin}/>
+          </div>
+          );
       }
+
       else{
         return (
           <h1> No idea what happened </h1>

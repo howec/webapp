@@ -5,10 +5,10 @@ import GoogleLogin from 'react-google-login';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 
-import Landing from './pages/landing/Landing'
-import Partners from './pages/partners/Partners'
-import Staff from './pages/staff/Staff';
-import Students from './pages/students/Students';
+import Landing from './pages/landing/LoginLanding'
+import Partners from './pages/partners/PartnersLanding'
+import Staff from './pages/staff/StaffLanding';
+import Students from './pages/students/StudentsLanding';
 
 import socket from './components/SocketUser';
 // import Table from './components/Table'

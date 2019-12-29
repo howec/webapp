@@ -21,7 +21,7 @@ class Login extends Component {
 
   render() {
     // if on the "Login" page
-
+    if(this.props.page == "Login"){
       return(
 
         <div>
@@ -39,6 +39,9 @@ class Login extends Component {
 
         </div>
         )
+    }else{
+      return null;
+    }
 
   }
 }
