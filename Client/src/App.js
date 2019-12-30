@@ -1,22 +1,15 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import {Link} from 'react-router-dom';
-import GoogleLogin from 'react-google-login';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
-
-import Landing from './pages/landing/LoginLanding'
+import Login from './pages/landing/LoginLanding'
 import Partners from './pages/partners/PartnersLanding'
 import Staff from './pages/staff/StaffLanding';
 import Students from './pages/students/StudentsLanding';
 
 import socket from './components/SocketUser';
-// import Table from './components/Table'
-
-//Join is login stuff
 
 
 class App extends Component{
+
   constructor(props){
     super(props);
     console.log("in app constructor");
@@ -26,11 +19,7 @@ class App extends Component{
     */
     this.state = {url: null, loggedIn: false, group: null, profile: null, data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
 
-
-    // const socket = this.socket;
-    // console.log("LOOK HERE: " + socket);
     socket.emit('FINALLY', {msg: "event from App.js"});
-
   }
 
 
@@ -38,7 +27,7 @@ class App extends Component{
     //should I be configuring a "group?"
 
 
-    //!!!!!TODO: need to make a function to get the url stuff
+    //!!!!!TODO: need to make a function to get the url stuff, input from staff
     let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
     this.setState({url: urlStuff});
 
@@ -68,7 +57,10 @@ class App extends Component{
     //login emission here
     socket.emit("loggedin", {email: this.state.profile.getEmail()});
 
+    //function to get the corresponding row entry from the appropriate sheet
+
   }
+
 
   onSignOut = () => {
     console.log("INSIDE THE SIGNOUT FUNCTION");
@@ -83,31 +75,19 @@ class App extends Component{
   }
 
 
-  updateStates = (dict) =>{
-    this.setState(dict);
-  }
-
-
-
 /*
   failsafe way: store the pages as things in divs, and render everything but selectively hide
-  
 */
   render(){
     console.log("inside app.js render..... " + this.state.url);
-
     return (
       <div>
-
-        <Landing url = {["Applica", ""]} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Login url = {["Applica", ""]} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Staff url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Students url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
         <Partners url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-
       </div>
-
-
-      )
+    )
   }
 
 }
@@ -115,21 +95,7 @@ class App extends Component{
 
 export default App;
 
-// var test = document.getElementById("test");
 
-// test.addEventListener("click", function(){
-//   socket.emit("createWorkspace", "NAME", "URL");
-//   console.log("Clicked workspace button");
-// });
-
-// console.log('before the emission');
-// socket.emit('test', {testing: "0000"});
-
-// socket.on("sendingattempt", function(data){
-//   console.log("sending from within app.js");
-//   console.log(data.attempt);
-
-// });
 
 
 

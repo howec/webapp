@@ -28,8 +28,6 @@ class NavigationBar extends Component {
 
 	  	console.log("in createNavBar");
 	  	for(const [func, name] of arg){
-	  		console.log("" + func);
-	  		console.log(name);
 	  		navbar.push(
 
 			          <li className="nav-item">

@@ -14,7 +14,6 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 
 //implement way to prevent ddos attacks later.... max amount of workspaces per user
-
 //test whether I can create "account"
 
 

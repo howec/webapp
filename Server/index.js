@@ -77,7 +77,7 @@ io.on('connection', function(socket){
 		console.log('a user logged out:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
 
-
+	//tdl
 	socket.on('FINALLY', function(data){
 		console.log(data.msg + " SocketID is: " + socket.id);
 	})
@@ -91,6 +91,7 @@ io.on('connection', function(socket){
 
 
 	//From login.js
+	//tdl
 	socket.on("test", function(data){
 		console.log('attempt to send data: ' + data.testing);
 		sendPartnerSpreadsheet0();
@@ -124,10 +125,7 @@ io.on('connection', function(socket){
 
 
 	socket.on("login", function(data){
-
 		//if valid login, then emit "access" to client and link socket to the scoped info within respective sheets
-
-
 	});
 
 
@@ -136,7 +134,7 @@ io.on('connection', function(socket){
 
 });
 
-
+//End of socket events
 
 
 

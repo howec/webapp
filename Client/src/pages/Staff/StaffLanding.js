@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import {Link} from 'react-router-dom';
 
 import socket from '../../components/SocketUser';
 import NavigationBar from '../../components/NavigationBar'
@@ -18,73 +17,67 @@ class Staff extends Component {
       Page values: Home, Staff, Students, Partners
     */
     this.state = {page: "Home"}
-
   }
 
 
-//need to readjust these to be in scope of this page
-//props -> staff, and record the state and configure visibility in the render() function
-  toHome = () =>{
-    console.log("In 1");
+  toHome = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Home"})
+      this.setState({page: "Home"});
     }
   }
-  toStaff = () =>{
-        console.log("In 2");
 
+
+  toStaff = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Staff"})
+      this.setState({page: "Staff"});
     }
   }
-  toStudents = () =>{
-    console.log("In 3");
 
+
+  toStudents = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Students"})
+      this.setState({page: "Students"});
     }
   }
-  toPartners = () =>{
-        console.log("In 4");
 
+
+  toPartners = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Partners"})
+      this.setState({page: "Partners"});
     }
-
   }
 
 
   render() {
-
-
   	if(this.props.group == 'Staff'){
 	    return (
-
 	    	<div>
 		      <NavigationBar url = {this.props.url} loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toStaff, "Staff"], [this.toPartners, "Partners"], [this.toStudents, "Students"]]}/>
-
-
-
 				  <h1> Staff Page! </h1>
-          
           <HomeSubpage page = {this.state.page}/>
           <StaffSubpage page = {this.state.page}/>
           <StudentsSubpage page = {this.state.page}/>
           <PartnersSubpage page = {this.state.page}/>
-
-
 		    </div>
-	    	)
-		}
-    else {
-    	return null
+	    )
+		} else {
+    	return null;
     }
-
-
   }
+
 }
 
 
 export default Staff;
+
+
+
+
+
+
+
+
+
+
 
 

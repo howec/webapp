@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import {Link} from 'react-router-dom';
 import GoogleLogin from 'react-google-login';
 
 import socket from '../../../components/SocketUser';
-import NavigationBar from '../../../components/NavigationBar'
-
 
 
 class Login extends Component {
@@ -23,9 +19,7 @@ class Login extends Component {
     // if on the "Login" page
     if(this.props.page == "Login"){
       return(
-
         <div>
-
           <div>
             <h1> LOGIN PAGE </h1>
             <GoogleLogin
@@ -36,14 +30,13 @@ class Login extends Component {
               cookiePolicy={'single_host_origin'}
             />
           </div>
-
         </div>
-        )
-    }else{
+      )
+    } else{
       return null;
     }
-
   }
+
 }
 
  

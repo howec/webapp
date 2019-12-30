@@ -23,13 +23,15 @@ class Landing extends Component {
     this.setState({page: "Create"});
   }
 
+
   toLogin = () => {
     this.setState({page: "Login"});
   }
 
+
   toConfirmation = () => {
     this.setState({page: "Confirmation"});
-  };
+  }
 
 
   render() {
@@ -41,50 +43,37 @@ class Landing extends Component {
             <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {[[this.toCreate, "Create a workspace"]]}/>
             <Login page = {this.state.page} onSignIn = {this.props.onSignIn}/>
           </div>
-
-          );
-      }
-      //else do not show the "Login" page
-      else if (this.state.page == "Create"){
-      console.log("In landing.js: " + this.state.page);
-
+        )
+      } else if(this.state.page == "Create"){
         return (
           <div>
             <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
             <Create page = {this.state.page} toConfirmation = {this.toConfirmation}/>
-        </div>
-
-        );
-      } else if (this.state.page == "Confirmation"){
+          </div>
+        )
+      } else if(this.state.page == "Confirmation"){
         return (
           <div>
             <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
             <Confirmation page = {this.state.page} toLanding = {this.toLogin}/>
           </div>
-          );
-      }
-
-      else{
+        )
+      } else{
         return (
           <h1> No idea what happened </h1>
-          );
+        )
       }
-
-  }
-  else{
+  } else {
     return null;
-
+    }
   }
 
-  }
 }
-
- 
-
-
 
 
 export default Landing;
+
+
 
 
 
