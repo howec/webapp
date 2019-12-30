@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import GoogleLogin from 'react-google-login';
 
 import socket from '../../../components/SocketUser';
@@ -10,8 +11,15 @@ class Login extends Component {
     super(props);
   }
 
-  responseGoogle = (response) => {
+  responseGoogleFail = (response) => {
     console.log("FAILED TO SIGN IN. " + JSON.stringify(response));
+  }
+
+  responseGoogleSucceed = (response) => {
+    console.log("Succeeded signing in! " + JSON.stringify(response));
+    console.log(response);
+
+    this.props.onSignIn(response);
   }
 
 
@@ -25,8 +33,8 @@ class Login extends Component {
             <GoogleLogin
               clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
               buttonText="Login"
-              onSuccess={this.props.onSignIn}
-              onFailure={this.responseGoogle}
+              onSuccess={this.responseGoogleSucceed}
+              onFailure={this.responseGoogleFail}
               cookiePolicy={'single_host_origin'}
             />
           </div>
@@ -39,11 +47,16 @@ class Login extends Component {
 
 }
 
- 
-
-
-
 
 export default Login;
+
+
+
+
+
+
+
+
+
 
 

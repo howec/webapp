@@ -23,15 +23,13 @@ class App extends Component{
   }
 
 
-  onSignIn = (googleUser, pageName) => {
+  onSignIn = (googleUser) => {
     //should I be configuring a "group?"
 
 
     //!!!!!TODO: need to make a function to get the url stuff, input from staff
     let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
     this.setState({url: urlStuff});
-
-
 
     console.log("SignedIn");
     this.setState({loggedIn: true});
@@ -82,10 +80,29 @@ class App extends Component{
     console.log("inside app.js render..... " + this.state.url);
     return (
       <div>
-        <Login url = {["Applica", ""]} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Staff url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Students url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
-        <Partners url = {this.state.url} group = {this.state.group} loggedIn = {this.state.loggedIn} onSignIn = {this.onSignIn} onSignOut = {this.onSignOut} />
+        <Login
+          url = {["Applica", ""]}
+          group = {this.state.group}
+          loggedIn = {this.state.loggedIn}
+          onSignIn = {this.onSignIn}
+          onSignOut = {this.onSignOut} />
+        <Staff url = {this.state.url}
+          group = {this.state.group}
+          loggedIn = {this.state.loggedIn}
+          onSignIn = {this.onSignIn}
+          onSignOut = {this.onSignOut} />
+        <Students
+          url = {this.state.url}
+          group = {this.state.group}
+          loggedIn = {this.state.loggedIn}
+          onSignIn = {this.onSignIn}
+          onSignOut = {this.onSignOut} />
+        <Partners
+          url = {this.state.url}
+          group = {this.state.group}
+          loggedIn = {this.state.loggedIn}
+          onSignIn = {this.onSignIn}
+          onSignOut = {this.onSignOut} />
       </div>
     )
   }

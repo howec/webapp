@@ -129,12 +129,9 @@ io.on('connection', function(socket){
 	});
 
 
-
-
-
 });
 
-//End of socket events
+//End of socket events ----------------------------------------------
 
 
 

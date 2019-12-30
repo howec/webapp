@@ -43,7 +43,11 @@ class Partners extends Component {
   	if(this.props.group == 'Partners'){
 	    return (
 	    	<div>
-          <NavigationBar url = {this.props.url} loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toApplicants, "Applicants"], [this.toProfile, "Profile"]]}/>
+          <NavigationBar
+            url = {this.props.url}
+            loggedIn = {this.props.loggedIn}
+            onSignOut = {this.props.onSignOut}
+            navbarItems = {[[this.toHome, "Home"], [this.toApplicants, "Applicants"], [this.toProfile, "Profile"]]}/>
 				  <h1> Partners page! </h1>
           <HomeSubpage page = {this.state.page}/>
           <ApplicantsSubpage page = {this.state.page}/>

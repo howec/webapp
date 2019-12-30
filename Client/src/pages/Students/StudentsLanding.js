@@ -45,7 +45,11 @@ class Students extends Component {
   	if(this.props.group == 'Students'){
 	    return (
 	    	<div>
-          <NavigationBar url = {this.props.url} loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toApplications, "Applications"], [this.toProfile, "Profile"]]}/>
+          <NavigationBar
+            url = {this.props.url}
+            loggedIn = {this.props.loggedIn}
+            onSignOut = {this.props.onSignOut}
+            navbarItems = {[[this.toHome, "Home"], [this.toApplications, "Applications"], [this.toProfile, "Profile"]]}/>
 				  <h1> Students page! </h1>
           <HomeSubpage page = {this.state.page}/>
           <ApplicationsSubpage page = {this.state.page}/>

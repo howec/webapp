@@ -40,21 +40,33 @@ class Landing extends Component {
       if(this.state.page == "Login"){
         return(
           <div>
-            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {[[this.toCreate, "Create a workspace"]]}/>
+            <NavigationBar
+              url = {this.props.url}
+              loggedIn = {false}
+              onSignOut = {null}
+              navbarItems = {[[this.toCreate, "Create a workspace"]]}/>
             <Login page = {this.state.page} onSignIn = {this.props.onSignIn}/>
           </div>
         )
       } else if(this.state.page == "Create"){
         return (
           <div>
-            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
+            <NavigationBar
+              url = {this.props.url}
+              loggedIn = {false}
+              onSignOut = {null}
+              navbarItems = {null}/>
             <Create page = {this.state.page} toConfirmation = {this.toConfirmation}/>
           </div>
         )
       } else if(this.state.page == "Confirmation"){
         return (
           <div>
-            <NavigationBar url = {this.props.url} loggedIn = {false} onSignOut = {null} navbarItems = {null}/>
+            <NavigationBar
+              url = {this.props.url}
+              loggedIn = {false}
+              onSignOut = {null}
+              navbarItems = {null}/>
             <Confirmation page = {this.state.page} toLanding = {this.toLogin}/>
           </div>
         )

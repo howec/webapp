@@ -10,7 +10,6 @@ import 'bootstrap/dist/js/bootstrap.js';
 import $ from 'jquery';
 import Popper from 'popper.js';
 
-
 import socket from '../components/SocketUser';
 
 
@@ -18,7 +17,6 @@ class NavigationBar extends Component {
 
   constructor(props){
     super(props);
-
   }
 
 
@@ -30,7 +28,7 @@ class NavigationBar extends Component {
 	  	for(const [func, name] of arg){
 	  		navbar.push(
 
-			          <li className="nav-item">
+			          <li className="nav-item" key = {name}>
 			            <a className="nav-link" onClick = {func}>{name}</a>
 			          </li>
 	  			);
@@ -55,7 +53,7 @@ class NavigationBar extends Component {
 			  rel="stylesheet"
 			  href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
 			  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-			  crossorigin="anonymous"
+			  crossOrigin="anonymous"
 			/>
 
 		   <nav className="navbar navbar-expand-sm navbar-dark bg-dark">
@@ -84,7 +82,7 @@ class NavigationBar extends Component {
 			  rel="stylesheet"
 			  href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
 			  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-			  crossorigin="anonymous"
+			  crossOrigin="anonymous"
 			/>
 
 		   <nav className="navbar navbar-expand-sm navbar-dark bg-dark">
