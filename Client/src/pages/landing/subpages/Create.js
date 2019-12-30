@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import GoogleLogin from 'react-google-login';
 
+import { Form, Col, FormGroup, Checkbox } from 'react-bootstrap'
+
 import socket from '../../../components/SocketUser';
 
 
@@ -17,7 +19,7 @@ class Create extends Component {
 
 
   createWorkspaceHandler = () => {
-    socket.emit("createWorkspace", "NAME", "URL");
+    socket.emit("createWorkspace", {name: "NAME", url: "URL"});
     console.log("Clicked workspace button");
 
     console.log('before the emission');
@@ -49,6 +51,30 @@ class Create extends Component {
         <div>
           <h1> Should be in Create now </h1>
           <h2> create here </h2>
+
+
+            <Form>
+              <Form.Group controlId="formBasicWorkspaceName">
+                <Form.Label>Workspace Name</Form.Label>
+                <Form.Control type="workspaceName" placeholder="Enter your workspace name" />
+                <Form.Text className="text-muted">
+                  We'll never share your email with anyone else.
+                </Form.Text>
+              </Form.Group>
+
+              <Form.Group controlId="formBasicPassword">
+                <Form.Label>Password</Form.Label>
+                <Form.Control type="password" placeholder="Password" />
+              </Form.Group>
+              <Form.Group controlId="formBasicCheckbox">
+                <Form.Check type="checkbox" label="Check me out" />
+              </Form.Group>
+              <button variant="primary" type="submit">
+                Submit
+              </button>
+            </Form>
+
+
           <button onClick = {this.formSubmit}>Create a workspace</button>
         </div>
       )

@@ -18,6 +18,7 @@ const io = socketio(server);
 
 app.use(router);
 
+
 server.listen(PORT, () => console.log('Server has started on port ' + PORT));
 
 //CODE HERE:
@@ -96,11 +97,15 @@ io.on('connection', function(socket){
 		// activeUsers[socket.id] = [socket, data.email]
 		console.log('from loggedin socket listener: ' + data.email);
 		sendPartnerSpreadsheet(socket, data.email);
-
+ 
 	});
 
 
+
 	socket.on("createWorkspace", function(data){
+
+		let name = data["name"];
+		let url = data["url"];
 		if(checkWorkspaceAvailability(data)){
 			workspaceDictionary[data] = "enter the url of the staff sheet here";
 
@@ -117,7 +122,7 @@ io.on('connection', function(socket){
 
 			console.log("sdjalksdjas " + data + workspaceDictionary);
 			writeData(workspaceDictionary);	
-			socket.emit("workspaceStatus", {msg: "The workspace whas been created!"});
+			socket.emit("workspaceStatus", {msg: "The workspace has been created!"});
 		}
 
 		socket.emit("workspaceStatus", {msg: "This workspace name has already been taken."});
@@ -127,6 +132,15 @@ io.on('connection', function(socket){
 
 	socket.on("login", function(data){
 		//if valid login, then emit "access" to client and link socket to the scoped info within respective sheets
+	});
+
+
+
+	socket.on("FormSubmitted", function(data){
+		console.log("Form has been submitted. workspace:" + data.workspace);
+		console.log("Form has been submitted. email: " + data.email);
+		console.log("Form has been submitted. password: " + data.password);
+
 	});
 
 
@@ -155,12 +169,6 @@ function checkWorkspaceAvailability(workspaceName){
 	return false;
 }
 
-
-
-function userScope(user){
-
-
-}
 
 
 let partner = '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg';
