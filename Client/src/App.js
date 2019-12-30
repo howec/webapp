@@ -17,7 +17,7 @@ class App extends Component{
     /* 
     group values: null, Students, Staff, Partners
     */
-    this.state = {url: null, loggedIn: false, group: null, profile: null, data: [{filler: "TO FILL WITH DATA", morefiller: "TO FILL WITH DATA2"}]};
+    this.state = {url: null, loggedIn: false, group: null, profile: null, data: null};
 
     socket.emit('FINALLY', {msg: "event from App.js"});
   }
@@ -52,9 +52,16 @@ class App extends Component{
 
     console.log("Entered console.... "  + this.state.loggedIn);
 
-    //login emission here
+    //login emission here... this is BEFORE any authentication
     socket.emit("loggedin", {email: this.state.profile.getEmail()});
 
+    socket.on("sendingattempt", (data) =>{
+      console.log("IN SENDING ATTEMPT");
+        console.log(data);
+        this.setState({data: data["attempt"]});
+        console.log("From within the set state.... " + JSON.stringify(this.state.data));
+
+    });
     //function to get the corresponding row entry from the appropriate sheet
 
   }
@@ -90,19 +97,22 @@ class App extends Component{
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}
           onSignIn = {this.onSignIn}
-          onSignOut = {this.onSignOut} />
+          onSignOut = {this.onSignOut}
+          data = {this.state.data} />
         <Students
           url = {this.state.url}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}
           onSignIn = {this.onSignIn}
-          onSignOut = {this.onSignOut} />
+          onSignOut = {this.onSignOut}
+          data = {this.state.data} />
         <Partners
           url = {this.state.url}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}
           onSignIn = {this.onSignIn}
-          onSignOut = {this.onSignOut} />
+          onSignOut = {this.onSignOut}
+          data = {this.state.data} />
       </div>
     )
   }

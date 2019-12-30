@@ -62,10 +62,9 @@ Sockets events ----------------------------------------------
 io.on('connection', function(socket){
 
 	//add user (using socket.id) as an entry in a json file with all stored
-	activeUsers[socket.id] = "associated entries";
+	// activeUsers[socket.id] = "associated entries";
 	console.log('We have a new connection!!! ' + socket.id);
 	console.log('user socket id is: ' + socket.id + "... length of activeUsers is: " + Object.keys(activeUsers).length);
-
 
 	socket.on('disconnect', function(){
 		delete activeUsers[socket.id];
@@ -83,18 +82,20 @@ io.on('connection', function(socket){
 	})
 
 
+	//will need to revise so as that email isn't the only thing that we're checking on
+	//this will probably need to be the authentication token
 	socket.on("loggedin", function(data){
+		//function needed to check the workspace name
+		//function needed to check if person exists in the workspace name for said group
+
+
+		//function needed to get the email corresponding to the authentication token
+		console.log('Connection has been STORED! USING SOCKET.ID: ' + socket.id);
+
+
+		// activeUsers[socket.id] = [socket, data.email]
 		console.log('from loggedin socket listener: ' + data.email);
-		sendPartnerSpreadsheet(data.email);
-
-	});
-
-
-	//From login.js
-	//tdl
-	socket.on("test", function(data){
-		console.log('attempt to send data: ' + data.testing);
-		sendPartnerSpreadsheet0();
+		sendPartnerSpreadsheet(socket, data.email);
 
 	});
 
@@ -204,7 +205,7 @@ function setStaffSpreadsheetURL(url){
 
 
 
-function sendPartnerSpreadsheet(email){
+function sendPartnerSpreadsheet(sock, email){
 	// Authenticate with the Google Spreadsheets API.
 	partnerSheet.useServiceAccountAuth(creds, function (err) {
 
@@ -227,46 +228,13 @@ function sendPartnerSpreadsheet(email){
 	    	}
 	    }
 
-	    // console.log(rows[0]["emailaddress"])
-	    // console.log(rows[0]);
-	    // for (var k = 0; k<rows[0].length;k++)
-
-	    io.emit("sendingattempt", {attempt: rows[position]});
-
-
-	  });
-	});
-
-}
+	    //function to select the columns specified by the Staff sheet
+	    let selectedStuff = {};
+	    // let selectedColumns = getSelectedColumns()
+	    // console.log(rows[position]);
 
 
-function sendPartnerSpreadsheet0(){
-	// Authenticate with the Google Spreadsheets API.
-	partnerSheet.useServiceAccountAuth(creds, function (err) {
-
-	  // Get all of the rows from the spreadsheet.
-	  partnerSheet.getRows(1, function (err, rows) {
-	    // console.log(rows);
-
-	    //HOWE LOOK HERE
-	    //TODO: add functionality to send to SPECIFIC socket!!!!
-	    //that means I need to know WHO is calling this function
-
-	    // for (var k = 0; k<rows.length; k++){
-	    // 	console.log(rows[k]);
-	    // }
-
-
-	    // for (const x in rows[1]){
-	    // 	console.log(x);
-	    // 	console.log(rows[1][x]);
-	    // }
-
-	    // console.log(rows[0]["emailaddress"])
-	    // console.log(rows[0]);
-	    // for (var k = 0; k<rows[0].length;k++)
-
-	    io.emit("sendingattempt", {attempt: rows[0]});
+	    sock.emit("sendingattempt", {attempt: rows[position]});
 
 
 	  });

@@ -38,7 +38,9 @@ class Partners extends Component {
     }
   }
 
-
+  //for any data that is modified in the subpages... then it'll be important to create a refresh cycle where sockets
+  //in the front end cause a socket in the back to emit to a listener in the front, set a state, and refresh
+  //the page.
   render(){
   	if(this.props.group == 'Partners'){
 	    return (
@@ -49,9 +51,9 @@ class Partners extends Component {
             onSignOut = {this.props.onSignOut}
             navbarItems = {[[this.toHome, "Home"], [this.toApplicants, "Applicants"], [this.toProfile, "Profile"]]}/>
 				  <h1> Partners page! </h1>
-          <HomeSubpage page = {this.state.page}/>
-          <ApplicantsSubpage page = {this.state.page}/>
-          <ProfileSubpage page = {this.state.page}/>
+          <HomeSubpage page = {this.state.page} data = {this.props.data}/>
+          <ApplicantsSubpage page = {this.state.page} data = {this.props.data}/>
+          <ProfileSubpage page = {this.state.page} data = {this.props.data}/>
 		    </div>
 	    )
 		}

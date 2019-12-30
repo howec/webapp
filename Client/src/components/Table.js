@@ -20,7 +20,7 @@ class Table extends React.Component {
 	getHeader = function(){
 		 var keys = this.getKeys();
 		 return keys.map((key, index)=>{
-		 return <th key={key}>{key.toUpperCase()}</th>
+		 	return <th key={key}>{key.toUpperCase()}</th>
 		 })
 		
 	 }
@@ -53,7 +53,7 @@ class Table extends React.Component {
 
 const RenderRow = (props) =>{
 	 return props.keys.map((key, index)=>{
-	 return <td key={props.data[key]}>{props.data[key]}</td>
+	 	return <td key={props.data[key]}>{props.data[key]}</td>
 	 })
 }
 

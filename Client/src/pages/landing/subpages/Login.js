@@ -29,7 +29,7 @@ class Login extends Component {
       return(
         <div>
           <div>
-            <h1> LOGIN PAGE </h1>
+            <h1> LOGIN PAGE... text here + any pictures </h1>
             <GoogleLogin
               clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
               buttonText="Login"
