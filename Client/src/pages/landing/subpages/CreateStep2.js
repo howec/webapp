@@ -36,10 +36,10 @@ class CreateStep2 extends Component {
             </Row>
 
             <Row horizontal='center'>
-              <Form onClick = {this.formSubmit}>
+              <Form onSubmit = {this.formSubmit}>
                 <Form.Group controlId="formPartnersSheet">
                   <Form.Label>Partner Google Sheet URL</Form.Label>
-                  <Form.Control type="text" placeholder="Enter URL" />
+                  <Form.Control required type="text" placeholder="Enter URL" />
                   <Form.Text className="text-muted">
                     Enter the URL for your PARTNER Google Sheet
                   </Form.Text>
@@ -47,7 +47,7 @@ class CreateStep2 extends Component {
 
                 <Form.Group controlId="formStudentsSheet">
                   <Form.Label>Student Google Sheet URL</Form.Label>
-                  <Form.Control type="text" placeholder="Enter URL" />
+                  <Form.Control required type="text" placeholder="Enter URL" />
                   <Form.Text className="text-muted">
                     Enter the URL for your STUDENT Google Sheet
                   </Form.Text>

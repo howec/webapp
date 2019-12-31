@@ -60,10 +60,10 @@ class CreateStep1 extends Component {
             </Row>
 
             <Row horizontal='center'>
-              <Form onClick = {this.formSubmit}>
+              <Form onSubmit = {this.formSubmit}>
                 <Form.Group controlId="formWorkspace">
                   <Form.Label>Workspace name</Form.Label>
-                  <Form.Control type="text" placeholder="Enter your workspace name" />
+                  <Form.Control required type="text" placeholder="Enter your workspace name" />
                   <Form.Text className="text-muted">
                     Pick something short and sweet!
                   </Form.Text>
@@ -71,7 +71,7 @@ class CreateStep1 extends Component {
 
                 <Form.Group controlId="formURL">
                   <Form.Label>Empty Google Sheet URL</Form.Label>
-                  <Form.Control type="text" placeholder="Enter URL" />
+                  <Form.Control required type="text" placeholder="Enter URL" />
                   <Form.Text className="text-muted">
                     Enter an empty Google Sheet's URL to use as your persistence
                   </Form.Text>

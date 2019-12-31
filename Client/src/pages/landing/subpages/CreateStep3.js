@@ -16,7 +16,7 @@ class CreateStep3 extends Component {
 
   formSubmit = (event) => {
     event.preventDefault();
-    
+
     //socket emission checks
     this.props.toNextStep();
 
@@ -36,10 +36,10 @@ class CreateStep3 extends Component {
             </Row>
 
             <Row horizontal='center'>
-              <Form onClick = {this.formSubmit}>
+              <Form onSubmit = {this.formSubmit}>
                 <Form.Group controlId="formEmail">
                   <Form.Label>Email address</Form.Label>
-                  <Form.Control type="text" placeholder="Enter your email here" />
+                  <Form.Control required type="text" placeholder="Enter your email here" />
                   <Form.Text className="text-muted">
                     We'll never share your email with anyone else.
                   </Form.Text>
@@ -47,7 +47,7 @@ class CreateStep3 extends Component {
 
                 <Form.Group controlId="formPassword">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" placeholder="Password" />
+                  <Form.Control required type="password" placeholder="Password" />
                   <Form.Text className="text-muted">
                     A strong password between 8-16 characters long.
                   </Form.Text>
@@ -55,7 +55,7 @@ class CreateStep3 extends Component {
 
                 <Form.Group controlId="formPassword2">
                   <Form.Label>Confirm password</Form.Label>
-                  <Form.Control type="password" placeholder="Password" />
+                  <Form.Control required type="password" placeholder="Password" />
                   <Form.Text className="text-muted">
                     Your passwords must match!
                   </Form.Text>
