@@ -1,47 +1,31 @@
 import React, { Component } from 'react';
 import GoogleLogin from 'react-google-login';
 
-import { Form, Col, FormGroup, Checkbox } from 'react-bootstrap'
+import { Button, Form, Col, FormGroup, Checkbox } from 'react-bootstrap'
 
 import socket from '../../../components/SocketUser';
+import { Column, Row } from 'simple-flexbox';
 
+import CreateStep1 from './CreateStep1';
+import CreateStep2 from './CreateStep2';
+import CreateStep3 from './CreateStep3';
 
 class Create extends Component {
 
   constructor(props){
     super(props);
+    this.state = {step: "Step1"};
   }
 
 
-  responseGoogle = (response) => {
-    console.log("FAILED TO SIGN IN. " + JSON.stringify(response));
-  }
-
-
-  createWorkspaceHandler = () => {
-    socket.emit("createWorkspace", {name: "NAME", url: "URL"});
-    console.log("Clicked workspace button");
-
-    console.log('before the emission');
-    socket.emit('test', {testing: "0000"});
-
-    socket.on("sendingattempt", function(data){
-    console.log("sending from within app.js");
-    console.log(data.attempt);
-    });
-
-    socket.on("workspaceStatus", function(data){
-      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
-    })
-
-  }
-
-
-  formSubmit = () => {
-    this.createWorkspaceHandler();
-
-    this.props.toConfirmation();
-
+  toNextStep = () => {
+    if(this.state.step == "Step1"){
+      this.setState({step: "Step2"});
+    }else if(this.state.step == "Step2"){
+      this.setState({step: "Step3"});
+    } else{
+      this.props.toConfirmation();
+    }
   }
 
 
@@ -49,33 +33,9 @@ class Create extends Component {
     if(this.props.page == "Create"){
       return(
         <div>
-          <h1> Should be in Create now </h1>
-          <h2> create here </h2>
-
-
-            <Form>
-              <Form.Group controlId="formBasicWorkspaceName">
-                <Form.Label>Workspace Name</Form.Label>
-                <Form.Control type="workspaceName" placeholder="Enter your workspace name" />
-                <Form.Text className="text-muted">
-                  We'll never share your email with anyone else.
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group controlId="formBasicPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control type="password" placeholder="Password" />
-              </Form.Group>
-              <Form.Group controlId="formBasicCheckbox">
-                <Form.Check type="checkbox" label="Check me out" />
-              </Form.Group>
-              <button variant="primary" type="submit">
-                Submit
-              </button>
-            </Form>
-
-
-          <button onClick = {this.formSubmit}>Create a workspace</button>
+          <CreateStep1 toNextStep = {this.toNextStep} step = {this.state.step}/>
+          <CreateStep2 toNextStep = {this.toNextStep} step = {this.state.step}/>
+          <CreateStep3 toNextStep = {this.toNextStep} step = {this.state.step}/>
         </div>
       )
     } else{

@@ -9,6 +9,7 @@ import NavigationBar from '../../components/NavigationBar'
 import Login from './subpages/Login'
 import Create from './subpages/Create'
 import Confirmation from './subpages/Confirmation'
+import { Column, Row } from 'simple-flexbox';
 
 
 class Landing extends Component {
@@ -45,7 +46,7 @@ class Landing extends Component {
                 navbarItems = {[[this.toCreate, "Create a workspace"]]}/>
              </div>
 
-             <div>
+            <div>
               <Login
                 setData = {this.props.setData}
                 setGroupApp = {this.props.setGroupApp}

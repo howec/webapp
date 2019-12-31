@@ -10,11 +10,21 @@
   align-items: center;
 
   height: 100vh;
-  min-height: 500px;
-  min-width: 500px;
+  min-height: 200;
+  min-width: 200;
 }
 
+/*.holder {
+  width:230px;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items:center;
+}*/
 
+/*.navbar-holder, .page-holder {
+  display:flex;
+  flex-flow:row wrap;
+}*/
 
 
 /*! 
