@@ -23,6 +23,14 @@ class App extends Component{
   }
 
 
+  staffSignIn = () =>{
+
+  }
+
+  partnerSignIn = () => {
+
+  }
+
   onSignIn = (googleUser) => {
     //should I be configuring a "group?"
 
@@ -38,7 +46,7 @@ class App extends Component{
 
 
     //!!!!!TODO: some function to tell you what group the person belongs in
-    this.setState({group: "Partners"})
+    this.setState({group: "Staff"})
     console.log("new group is: " + this.state.group);
     console.log("signed in! " + this.state.loggedIn);
 

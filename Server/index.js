@@ -1,5 +1,8 @@
 //setup
 const fs = require('fs');
+
+
+
 const GoogleSpreadsheet = require('google-spreadsheet');
 const creds = require('./GitIgnore/apis_backend_client_secret.json'); //my secret key
 
@@ -80,7 +83,18 @@ io.on('connection', function(socket){
 	//tdl
 	socket.on('FINALLY', function(data){
 		console.log(data.msg + " SocketID is: " + socket.id);
-	})
+	});
+
+	socket.on('workspaceSubmitted', function(data){
+		//to change!!!
+		if(data.workspace == "NAME"){
+			socket.emit("workspaceValidation", {valid: true});
+			console.log("Entered workspaceSubmitted");
+		}else{
+			socket.emit("workspaceValidation", {valid: false});
+		}
+	});
+
 
 
 	//will need to revise so as that email isn't the only thing that we're checking on
@@ -89,9 +103,10 @@ io.on('connection', function(socket){
 		//function needed to check the workspace name
 		//function needed to check if person exists in the workspace name for said group
 
-
+		activeUsers[socket.id] = data;
 		//function needed to get the email corresponding to the authentication token
 		console.log('Connection has been STORED! USING SOCKET.ID: ' + socket.id);
+		console.log("length of activeUsers is: " + Object.keys(activeUsers).length);
 
 
 		// activeUsers[socket.id] = [socket, data.email]
@@ -135,12 +150,10 @@ io.on('connection', function(socket){
 	});
 
 
-
 	socket.on("FormSubmitted", function(data){
 		console.log("Form has been submitted. workspace:" + data.workspace);
 		console.log("Form has been submitted. email: " + data.email);
 		console.log("Form has been submitted. password: " + data.password);
-
 	});
 
 
@@ -148,13 +161,23 @@ io.on('connection', function(socket){
 
 //End of socket events ----------------------------------------------
 
+function selectedEntries(selections, data){
+	let selectedData = {};
+
+	for(const x in selections){
+		selectedData[x] = data[x];
+	}
+
+	return selectedData;
+}
+
 
 
 /*
 Verify user upon login attempt. Does not modify any globals.
 Instead, the function configures scope variables for a user as referenced by Socket.
 */
-function loginStaffPartner(category, ){
+function loginStaffPartner(category ){
 
 }
 
@@ -238,9 +261,18 @@ function sendPartnerSpreadsheet(sock, email){
 
 	    //function to select the columns specified by the Staff sheet
 	    let selectedStuff = {};
+	    let temp = {};
 	    // let selectedColumns = getSelectedColumns()
 	    // console.log(rows[position]);
-
+	    var count = 0;
+		for (const key in rows[0]){
+	    	temp[count] = key;
+	    	count = count + 1;
+	    }
+	    partnerColumns = temp;
+		console.log("I've been called inside SendPartnerSpreadsheet");
+		console.log(rows[0][partnerColumns[7]]);
+		console.log(partnerColumns);
 
 	    sock.emit("sendingattempt", {attempt: rows[position]});
 

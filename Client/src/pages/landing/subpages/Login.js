@@ -7,12 +7,14 @@ import Form from 'react-bootstrap/Form'
 import { Button} from 'react-bootstrap';
 
 import socket from '../../../components/SocketUser';
+import { Column, Row } from 'simple-flexbox';
 
 
 class Login extends Component {
 
   constructor(props){
     super(props);
+    this.state = {valid: null}
   }
 
   responseGoogleFail = (response) => {
@@ -28,61 +30,76 @@ class Login extends Component {
 
 
 
-  sendToServer = () =>{
-    let workspace = document.getElementById('formBasicWorkspaceName').value;
+  sendToServer = (event) =>{
+    event.preventDefault();
+
     let email = document.getElementById('formBasicEmail').value;
     let password = document.getElementById('formBasicPassword').value;
-    socket.emit("FormSubmitted", {workspace: workspace, email: email, password: password});
+    socket.emit("FormSubmitted", {email: email, password: password});
   }
 
+  sendWorkspace = (event) =>{
+    event.preventDefault();
 
+    let workspace = document.getElementById('formBasicWorkspaceName').value;
+    socket.emit("workspaceSubmitted", {workspace: workspace});
+    console.log("IN THE sendWorkspace function!");
+  
+    //assuming that the validation function actually works...
+    socket.on('workspaceValidation', (data) => {
+      if(data.valid == true){
+        this.setState({valid: true});
+        this.props.toLoginAs();
+      } else{
+        this.setState({valid: false});
+      }
+    })
+  }
+
+  errorMessage = () => {
+    console.log("IN ERROR MESSAGE : " + this.state.valid);
+
+    if(this.state.valid != false){
+      return null;
+    }
+    return (<p><i><font color="#CD5C5C">That workspace doesn't exist!</font></i></p>);
+  }
 
   render() {
-    // if on the "Login" page
     if(this.props.page == "Login"){
-      return(
-        <div>
-          <div>
-            <h1> LOGIN PAGE... </h1>
 
-            <Form onSubmit = {this.sendToServer}>
-              <Form.Group controlId="formBasicWorkspaceName">
-                <Form.Label>Workspace name</Form.Label>
-                <Form.Control required type="text" placeholder="Enter your workspace name" />
-              </Form.Group>
-
-              <Form.Group controlId="formBasicEmail">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control required type="email" placeholder="Enter email" />
-              </Form.Group>
-
-              <Form.Group controlId="formBasicPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control required type="password" placeholder="Password" />
-              </Form.Group>
-
-              <Button variant="primary" type="submit">
-                Login here! 
-              </Button>
-            </Form>
+      if(this.props.step==null){
+        return(
+            <div className="center-me">
+            <Column horizontal='center' flexGrow={1}>
 
 
+              <Row horizontal='center'>
+                  <h2>Login to your workspace</h2>
+              </Row>
 
+              <Row horizontal='center'>
+                <Form onSubmit = {this.sendWorkspace}>
+                  <Form.Group controlId="formBasicWorkspaceName">
+                    <Form.Label>Workspace name</Form.Label>
+                    <Form.Control required type="text" placeholder="Enter workspace name" />
+                  </Form.Group>
+                  
+                  {this.errorMessage()}
 
+                  <Row horizontal='center'>
+                    <Button variant="primary" type="submit">Go!</Button>
+                  </Row>
+                </Form>
+              </Row>
 
-
-            <GoogleLogin
-              clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
-              buttonText="Login"
-              onSuccess={this.responseGoogleSucceed}
-              onFailure={this.responseGoogleFail}
-              cookiePolicy={'single_host_origin'}
-            />
-
+            </Column>
 
           </div>
-        </div>
-      )
+        )
+      } else{
+        return null;
+      }
     } else{
       return null;
     }
