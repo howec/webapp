@@ -150,10 +150,15 @@ io.on('connection', function(socket){
 	});
 
 
-	socket.on("FormSubmitted", function(data){
+	socket.on("loginSubmitted", function(data){
 		console.log("Form has been submitted. workspace:" + data.workspace);
+		console.log("Form has been submitted. group:" + data.group);
 		console.log("Form has been submitted. email: " + data.email);
 		console.log("Form has been submitted. password: " + data.password);
+
+		//if match... assume true for now
+		socket.emit("loginValidation", {valid: false});
+
 	});
 
 

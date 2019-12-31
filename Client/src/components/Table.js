@@ -29,7 +29,7 @@ class Table extends React.Component {
 		 var items = this.props.data;
 		 var keys = this.getKeys();
 		 return items.map((row, index)=>{
-		 return <tr key={index}><RenderRow key={index} data={row} keys={keys}/></tr>
+		 	return <tr key={index}><RenderRow key={index} data={row} keys={keys}/></tr>
 		 })
 		
 	 }

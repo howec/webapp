@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
-import Login from './pages/landing/LoginLanding'
-import Partners from './pages/partners/PartnersLanding'
-import Staff from './pages/staff/StaffLanding';
-import Students from './pages/students/StudentsLanding';
+import LoginLanding from './pages/landing/LoginLanding'
+import PartnersLanding from './pages/partners/PartnersLanding'
+import StaffLanding from './pages/staff/StaffLanding';
+import StudentsLanding from './pages/students/StudentsLanding';
 
 import socket from './components/SocketUser';
 
@@ -30,6 +30,16 @@ class App extends Component{
   partnerSignIn = () => {
 
   }
+
+
+  setData = (d) =>{
+    this.setState({data: d});
+  }
+
+  setGroupApp = (g) =>{
+    this.setState({group: g});
+  }
+
 
   onSignIn = (googleUser) => {
     //should I be configuring a "group?"
@@ -95,26 +105,29 @@ class App extends Component{
     console.log("inside app.js render..... " + this.state.url);
     return (
       <div>
-        <Login
+        <LoginLanding
+          setData = {this.setData}
+          setGroupApp = {this.setGroupApp}
           url = {["Applica", ""]}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}
           onSignIn = {this.onSignIn}
           onSignOut = {this.onSignOut} />
-        <Staff url = {this.state.url}
-          group = {this.state.group}
-          loggedIn = {this.state.loggedIn}
-          onSignIn = {this.onSignIn}
-          onSignOut = {this.onSignOut}
-          data = {this.state.data} />
-        <Students
+        <StaffLanding
           url = {this.state.url}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}
           onSignIn = {this.onSignIn}
           onSignOut = {this.onSignOut}
           data = {this.state.data} />
-        <Partners
+        <StudentsLanding
+          url = {this.state.url}
+          group = {this.state.group}
+          loggedIn = {this.state.loggedIn}
+          onSignIn = {this.onSignIn}
+          onSignOut = {this.onSignOut}
+          data = {this.state.data} />
+        <PartnersLanding
           url = {this.state.url}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}

@@ -9,8 +9,6 @@ import { Button} from 'react-bootstrap';
 import socket from '../../../components/SocketUser';
 import { Column, Row } from 'simple-flexbox';
 
-import LoginAs from './LoginAs'
-
 
 class Login extends Component {
 
@@ -35,21 +33,29 @@ class Login extends Component {
   sendLogin = (event) =>{
     event.preventDefault();
 
-    let email = document.getElementById('formBasicEmail').value;
-    let password = document.getElementById('formBasicPassword').value;
-    socket.emit("FormSubmitted", {workspace: this.state.workspace, group: this.state.group, email: email, password: password});
+    let email = document.getElementById('formEmail').value;
+    let password = document.getElementById('formPassword').value;
+    socket.emit("loginSubmitted", {workspace: this.state.workspace, group: this.state.group, email: email, password: password});
+  
+    socket.on('loginValidation', (arg) => {
+      if(arg.valid == true){
+        this.props.setGroupApp(this.state.group);
+        this.props.setData(arg.data);
+      } else{
+        this.setState({valid: false});
+      }
+    });
   }
 
   sendWorkspace = (event) =>{
     event.preventDefault();
-
-    let workspace = document.getElementById('formBasicWorkspaceName').value;
+    
+    let workspace = document.getElementById('formWorkspace').value;
     socket.emit("workspaceSubmitted", {workspace: workspace});
-    console.log("IN THE sendWorkspace function!");
   
     //assuming that the validation function actually works...
-    socket.on('workspaceValidation', (data) => {
-      if(data.valid == true){
+    socket.on('workspaceValidation', (arg) => {
+      if(arg.valid == true){
         this.setState({workspace: workspace, valid: true, step: "LoginAs"});
       } else{
         this.setState({valid: false});
@@ -57,13 +63,18 @@ class Login extends Component {
     });
   }
 
-  errorMessage = () => {
-    console.log("IN ERROR MESSAGE : " + this.state.valid);
-
+  workspaceError = () => {
     if(this.state.valid != false){
       return null;
     }
     return (<p><i><font color="#CD5C5C">That workspace doesn't exist!</font></i></p>);
+  }
+
+  loginError = () => {
+    if(this.state.valid != false){
+      return null;
+    }
+    return (<p><i><font color="#CD5C5C">Incorrect login credentials!</font></i></p>);
   }
 
   setGroupStaff = () => {
@@ -92,12 +103,12 @@ class Login extends Component {
 
               <Row horizontal='center'>
                 <Form onSubmit = {this.sendWorkspace}>
-                  <Form.Group controlId="formBasicWorkspaceName">
+                  <Form.Group controlId="formWorkspace">
                     <Form.Label>Workspace name</Form.Label>
                     <Form.Control required type="text" placeholder="Enter workspace name" />
                   </Form.Group>
                   
-                  {this.errorMessage()}
+                  {this.workspaceError()}
 
                   <Row horizontal='center'>
                     <Button variant="primary" type="submit">Go!</Button>
@@ -168,17 +179,29 @@ class Login extends Component {
                     <Form.Control required type="password" placeholder="Enter password" />
                   </Form.Group>
                   
+                  {this.loginError()}
+
                   <Row horizontal='center'>
                     <Button variant="primary" type="submit">Login!</Button>
                   </Row>
 
-                  <GoogleLogin
-                    clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
-                    buttonText="Login with Google"
-                    onSuccess={this.responseGoogleSucceed}
-                    onFailure={this.responseGoogleFail}
-                    cookiePolicy={'single_host_origin'}
-                  />
+                  <Row horizontal = 'center'>
+                    <p><b><font color = "#626666">-OR-</font></b></p>
+                  </Row>
+
+                  <Row horizontal = 'center'>
+                    <GoogleLogin
+                      clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
+                      buttonText="Login with Google"
+                      onSuccess={this.responseGoogleSucceed}
+                      onFailure={this.responseGoogleFail}
+                      cookiePolicy={'single_host_origin'}
+                    />
+                  </Row>
+
+                  <Row horizontal = 'center'>
+                    <p><b><i><font size ={2} color = "#a9a9a9">Recommended if logging in as student</font></i></b></p>
+                  </Row>
 
 
                 </Form>

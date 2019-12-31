@@ -1,4 +1,21 @@
 
+/*
+ * Additional CSS
+ */
+
+.center-me {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 100vh;
+  min-height: 500px;
+  min-width: 500px;
+}
+
+
+
 
 /*! 
  * Primitive UI | MIT License

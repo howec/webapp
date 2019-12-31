@@ -52,12 +52,17 @@ class Staff extends Component {
   	if(this.props.group == 'Staff'){
 	    return (
 	    	<div>
-		      <NavigationBar url = {this.props.url} loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toStaff, "Staff"], [this.toPartners, "Partners"], [this.toStudents, "Students"]]}/>
-				  <h1> Staff Page! </h1>
-          <HomeSubpage page = {this.state.page}/>
-          <StaffSubpage page = {this.state.page}/>
-          <StudentsSubpage page = {this.state.page}/>
-          <PartnersSubpage page = {this.state.page}/>
+          <div>
+		        <NavigationBar url = {this.props.url} loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toStaff, "Staff"], [this.toPartners, "Partners"], [this.toStudents, "Students"]]}/>
+				  </div>
+
+          <div>
+            <h1> Staff Page! </h1>
+            <HomeSubpage page = {this.state.page}/>
+            <StaffSubpage page = {this.state.page}/>
+            <StudentsSubpage page = {this.state.page}/>
+            <PartnersSubpage page = {this.state.page}/>
+          </div>
 		    </div>
 	    )
 		} else {
