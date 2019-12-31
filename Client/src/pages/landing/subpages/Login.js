@@ -9,12 +9,14 @@ import { Button} from 'react-bootstrap';
 import socket from '../../../components/SocketUser';
 import { Column, Row } from 'simple-flexbox';
 
+import LoginAs from './LoginAs'
+
 
 class Login extends Component {
 
   constructor(props){
     super(props);
-    this.state = {valid: null}
+    this.state = {valid: null, step: null, workspace: null, group: null}
   }
 
   responseGoogleFail = (response) => {
@@ -30,12 +32,12 @@ class Login extends Component {
 
 
 
-  sendToServer = (event) =>{
+  sendLogin = (event) =>{
     event.preventDefault();
 
     let email = document.getElementById('formBasicEmail').value;
     let password = document.getElementById('formBasicPassword').value;
-    socket.emit("FormSubmitted", {email: email, password: password});
+    socket.emit("FormSubmitted", {workspace: this.state.workspace, group: this.state.group, email: email, password: password});
   }
 
   sendWorkspace = (event) =>{
@@ -48,12 +50,11 @@ class Login extends Component {
     //assuming that the validation function actually works...
     socket.on('workspaceValidation', (data) => {
       if(data.valid == true){
-        this.setState({valid: true});
-        this.props.toLoginAs();
+        this.setState({workspace: workspace, valid: true, step: "LoginAs"});
       } else{
         this.setState({valid: false});
       }
-    })
+    });
   }
 
   errorMessage = () => {
@@ -65,10 +66,21 @@ class Login extends Component {
     return (<p><i><font color="#CD5C5C">That workspace doesn't exist!</font></i></p>);
   }
 
-  render() {
-    if(this.props.page == "Login"){
+  setGroupStaff = () => {
+    this.setState({group: "Staff", step: "Staff"});
+  }
 
-      if(this.props.step==null){
+  setGroupStudents = () => {
+    this.setState({group: "Students", step: "Students"});
+  }
+
+  setGroupPartners = () => {
+    this.setState({group: "Partners", step: "Partners"});
+  }
+
+
+  render() {
+      if(this.state.step==null){
         return(
             <div className="center-me">
             <Column horizontal='center' flexGrow={1}>
@@ -90,6 +102,17 @@ class Login extends Component {
                   <Row horizontal='center'>
                     <Button variant="primary" type="submit">Go!</Button>
                   </Row>
+
+                  <Row horizontal = 'center'>
+                    <GoogleLogin
+                      clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
+                      buttonText="Login with Google"
+                      onSuccess={this.responseGoogleSucceed}
+                      onFailure={this.responseGoogleFail}
+                      cookiePolicy={'single_host_origin'}
+                    />
+                  </Row>
+
                 </Form>
               </Row>
 
@@ -97,13 +120,75 @@ class Login extends Component {
 
           </div>
         )
+      } else if(this.state.step == "LoginAs") {
+          return (
+            <div className='center-me'>
+
+              <Column flexGrow={1}>
+                <Row horizontal='center'>
+                  <h1> Which are you logging in as? </h1>
+                </Row>
+
+                <Row horizontal='center'>
+                  <Button onClick={this.setGroupStaff}>Staff</Button>
+                </Row>
+
+                <Row horizontal='center'>
+                  <Button onClick={this.setGroupPartners}>Partner</Button>
+                </Row>
+
+                <Row horizontal='center'>
+                  <Button onClick={this.setGroupStudents}>Student</Button>
+                </Row>
+
+              </Column>
+
+            </div>
+          );
       } else{
-        return null;
+        return (
+          <div className='center-me'>
+
+            <Column horizontal='center' flexGrow={1}>
+
+
+              <Row horizontal='center'>
+                  <h1>{this.state.group}</h1>
+              </Row>
+
+              <Row horizontal='center'>
+                <Form onSubmit = {this.sendLogin}>
+                  <Form.Group controlId="formEmail">
+                    <Form.Label>Email address</Form.Label>
+                    <Form.Control required type="email" placeholder="Enter email" />
+                  </Form.Group>
+
+                  <Form.Group controlId="formPassword">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control required type="password" placeholder="Enter password" />
+                  </Form.Group>
+                  
+                  <Row horizontal='center'>
+                    <Button variant="primary" type="submit">Login!</Button>
+                  </Row>
+
+                  <GoogleLogin
+                    clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
+                    buttonText="Login with Google"
+                    onSuccess={this.responseGoogleSucceed}
+                    onFailure={this.responseGoogleFail}
+                    cookiePolicy={'single_host_origin'}
+                  />
+
+
+                </Form>
+              </Row>
+
+            </Column>
+          </div>
+        );
       }
-    } else{
-      return null;
     }
-  }
 
 }
 

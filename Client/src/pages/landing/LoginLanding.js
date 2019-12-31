@@ -9,47 +9,25 @@ import NavigationBar from '../../components/NavigationBar'
 import Login from './subpages/Login'
 import Create from './subpages/Create'
 import Confirmation from './subpages/Confirmation'
-import LoginAs from './subpages/LoginAs'
-import LoginAsStudent from './subpages/LoginAsStudent'
-import LoginAsStaff from './subpages/LoginAsStaff'
-import LoginAsPartner from './subpages/LoginAsPartner'
 
 
 class Landing extends Component {
 
   constructor(props){
     super(props);
-    this.state = {page: "Login", step: null};
+    this.state = {page: "Login"};
   }
-
 
   toCreate = () => {
     this.setState({page: "Create"});
   }
 
+  toConfirmation = () => {
+    this.setState({page: "Confirmation"});
+  }
 
   toLogin = () => {
     this.setState({page: "Login"});
-  }
-
-  toLoginAs = () => {
-    this.setState({step: "LoginAs"});
-  }
-
-  toLoginAsStudent = () => {
-    this.setState({step: "LoginAsStudent"});
-  }
-
-  toLoginAsStaff = () => {
-    this.setState({step: "LoginAsStaff"});
-  }
-
-  toLoginAsPartner = () => {
-    this.setState({step: "LoginAsPartner"});
-  }
-
-  toConfirmation = () => {
-    this.setState({step: "Confirmation"});
   }
 
 
@@ -65,16 +43,7 @@ class Landing extends Component {
               onSignOut = {null}
               navbarItems = {[[this.toCreate, "Create a workspace"]]}/>
             
-            <Login toLoginAs = {this.toLoginAs} step= {this.state.step} page = {this.state.page} onSignIn = {this.props.onSignIn}/>
-            <LoginAs
-              step={this.state.step}
-              toLoginAsPartner={this.toLoginAsPartner}
-              toLoginAsStaff={this.toLoginAsStaff}
-              toLoginAsStudent={this.toLoginAsStudent}/>
-            <LoginAsStaff step = {this.state.step} />
-            <LoginAsStudent step = {this.state.step} />
-            <LoginAsPartner step = {this.state.step} />
-
+            <Login page = {this.state.page} onSignIn = {this.props.onSignIn}/>
           </div>
         )
       } else if(this.state.page == "Create"){
