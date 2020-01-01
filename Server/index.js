@@ -42,8 +42,10 @@ try{
 	console.log(error);
 	workspaceDictionary = {};
 	writeData(workspaceDictionary);
-
 }
+
+let unfinishedWorkspaces = {};
+
 
 /*
 Function to write the workspaceDictionary into memory, replacing it if it already exists.
@@ -64,13 +66,21 @@ function writeData(dict){
 Sockets events ----------------------------------------------
 */
 io.on('connection', function(socket){
+	activeUsers[socket.id] = null;
 
 	//add user (using socket.id) as an entry in a json file with all stored
 	// activeUsers[socket.id] = "associated entries";
 	console.log('We have a new connection!!! ' + socket.id);
 	console.log('user socket id is: ' + socket.id + "... length of activeUsers is: " + Object.keys(activeUsers).length);
 
+
+
 	socket.on('disconnect', function(){
+		//temps are temporary values created before committing anything to memory such as during the create-workspace phase
+		let temps = activeUsers[socket.id];
+
+		//removes any unfinished workspaces upon disconnect
+		delete unfinishedWorkspaces[temps];
 		delete activeUsers[socket.id];
 		console.log('a user disconnected:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
@@ -94,16 +104,16 @@ io.on('connection', function(socket){
 			socket.emit("workspaceValidation", {valid: false});
 		}
 	});
+ 
 
-
-
+	//HOWE PROBABLY CAN DELETE?
 	//will need to revise so as that email isn't the only thing that we're checking on
 	//this will probably need to be the authentication token
 	socket.on("loggedin", function(data){
 		//function needed to check the workspace name
 		//function needed to check if person exists in the workspace name for said group
 
-		activeUsers[socket.id] = data;
+		activeUsers[socket.id] = data.email;
 		//function needed to get the email corresponding to the authentication token
 		console.log('Connection has been STORED! USING SOCKET.ID: ' + socket.id);
 		console.log("length of activeUsers is: " + Object.keys(activeUsers).length);
@@ -118,31 +128,19 @@ io.on('connection', function(socket){
 
 
 	socket.on("createWorkspace", function(data){
+		let name = data.name;
 
-		let name = data["name"];
-		let url = data["url"];
-		if(checkWorkspaceAvailability(data)){
-			workspaceDictionary[data] = "enter the url of the staff sheet here";
-
-			//create Staff login credentials
-				//username, password, password again
-				//send the email to verify
-			//need to check validity of url
-			//need to ask user to share their url to the google-email
-			//need to create/delete a sheet as a test
-			//set up the STAFF sheet, but then set up PARTNERS and STUDENTS
-			//need to create/delete sheets as test for PARTNERS and STUDENTS
-
-
-
-			console.log("sdjalksdjas " + data + workspaceDictionary);
-			writeData(workspaceDictionary);	
+		if(checkWorkspaceAvailability(name, socket)){
+			unfinishedWorkspaces[name] = socket.id;
 			socket.emit("workspaceStatus", {msg: "The workspace has been created!"});
+			//has not officially been stored into memory yet. Sheet sharing privileges must first be verified
+		} else {
+			socket.emit("workspaceStatus", {msg: "This workspace name cannot be used."});
 		}
 
-		socket.emit("workspaceStatus", {msg: "This workspace name has already been taken."});
-
 	});
+
+	///need a socket that will work similarly for email/password... once email + password has been set, then unfinished gets transferred to workspacedictionary, then deleted
 
 
 	socket.on("login", function(data){
@@ -163,6 +161,43 @@ io.on('connection', function(socket){
 
 
 });
+
+function checkSheetSharing(url, sock){
+
+	//test
+	// sendPartnerSpreadsheet();
+	// console.log("Partner columns below");
+	// getPartnerColumns();
+
+	console.log("url is " + url);
+	let temp = new GoogleSpreadsheet(parseURL(url));
+	console.log(temp.isAuthActive());
+
+	function attempt(tempsheet){
+		tempsheet.useServiceAccountAuth(creds, function (err) {
+
+					console.log("trying in here now")
+				  	console.log(tempsheet.isAuthActive());
+
+		  tempsheet.getRows(1, function (err, rows) {
+		  	console.log("LOOKLOOK the sheet is: " + JSON.stringify(tempsheet));
+		  	console.log("LOOKLOOK the sheet.info is: " + JSON.stringify(tempsheet.info));
+		  	console.log(tempsheet.isAuthActive());
+
+		  	if(tempsheet.info != undefined){
+		  		sock.emit("sheetShared", {shared: true});
+		  	}
+		  	else{
+		  		sock.emit("sheetShared", {shared: false});
+		  	}
+
+		  });
+		});
+	}
+
+	attempt(partnerSheet);
+}
+
 
 //End of socket events ----------------------------------------------
 
@@ -187,18 +222,26 @@ function loginStaffPartner(category ){
 }
 
 
-function checkWorkspaceAvailability(workspaceName){
-	console.log("Name of the passed in workspace: " + workspaceName);
-	if (workspaceDictionary[workspaceName] == undefined){
-		console.log("This workspace name is available!");		
-		return true;
+function checkWorkspaceAvailability(name, sock){
+	console.log("Name of the passed in workspace: " + name);
+	if (workspaceDictionary[name] == undefined){
+		if(unfinishedWorkspaces[name] == undefined){
+			console.log("This workspace name is available!");	
+			unfinishedWorkspaces[name] = sock.id;
+			console.log(unfinishedWorkspaces[name]);
+
+			activeUsers[sock.id] = name;
+
+			return true;
+		}
 	}
+
+
 	console.log("This workspace has already been created.");
 	return false;
 }
 
-
-
+// let partner = '1X2udtqxCNpha3V0GV26Gmz0mADe_W6lfZW_z4YzOTcI';
 let partner = '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg';
 let student = '1GXGJV1FfcUeIGk8T6_G6EUmKcLTSfQWxck1TX2k9-tw';
 let staff = '18ugcQrxTlo2I3MzTrfMLPLI4HYAVNRnwFaF54KI7jZA';
@@ -216,19 +259,25 @@ var staffSheet = '';
 setPartnerSpreadsheetURL(partner);
 setStaffSpreadsheetURL(staff);
 
+//Howe
+function unusedURL(url){
+	return true;
+}
 
+//HOWE
+function checkURL(url){
+	return true;
+}
 
-
+//HOWE
 function parseURL(url){
-
-	//to implement
-	//look inside the corresponding JSON provided
-
 	return url;
 }
 
 function setPartnerSpreadsheetURL(url){
 	partnerSheet = new GoogleSpreadsheet(parseURL(url));
+
+	// console.log(partnerSheet === {});
 }
 
 function setStudentSpreadsheetURL(url){
@@ -243,6 +292,7 @@ function setStaffSpreadsheetURL(url){
 
 function sendPartnerSpreadsheet(sock, email){
 	// Authenticate with the Google Spreadsheets API.
+
 	partnerSheet.useServiceAccountAuth(creds, function (err) {
 
 	  // Get all of the rows from the spreadsheet.
@@ -315,6 +365,8 @@ function getPartnerColumns(){
 
 	  // Get all of the rows from the spreadsheet.
 	  partnerSheet.getRows(1, function (err, rows) {
+		console.log("LOOKLOOK: "+ JSON.stringify(partnerSheet));
+		console.log(partnerSheet.isAuthActive());
 
 	  	var count = 0;
 	    for (const key in rows[0]){
