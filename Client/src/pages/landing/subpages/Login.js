@@ -90,6 +90,15 @@ class Login extends Component {
   }
 
 
+  testing = () => {
+    // socket.emit("test", {login: '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg'})
+    socket.emit("test", {login: '18ugcQrxTlo2I3MzTrfMLPLI4HYAVNRnwFaF54KI7jZA'})
+    // socket.emit("test", {login: 'dfssdf'})
+
+    console.log("emitted socket event from login.js");
+  }
+
+
   render() {
       if(this.state.step==null){
         return(
@@ -125,6 +134,11 @@ class Login extends Component {
                   </Row>
 
                 </Form>
+              </Row>
+
+
+              <Row horizontal='center'>
+                <Button variant="primary" onClick = {this.testing}>TEST</Button>
               </Row>
 
             </Column>

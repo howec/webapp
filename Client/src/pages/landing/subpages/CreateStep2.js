@@ -37,27 +37,19 @@ class CreateStep2 extends Component {
 
             <Row horizontal='center'>
               <Form onSubmit = {this.formSubmit}>
-                <Form.Group controlId="formEmail">
-                  <Form.Label>Email address</Form.Label>
-                  <Form.Control required type="text" placeholder="Enter your email here" />
+                <Form.Group controlId="formPartnersSheet">
+                  <Form.Label>Partner Google Sheet URL</Form.Label>
+                  <Form.Control required type="text" placeholder="Enter URL" />
                   <Form.Text className="text-muted">
-                    We'll never share your email with anyone else.
+                    Enter the URL for your PARTNER Google Sheet
                   </Form.Text>
                 </Form.Group>
 
-                <Form.Group controlId="formPassword">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control required type="password" placeholder="Password" />
+                <Form.Group controlId="formStudentsSheet">
+                  <Form.Label>Student Google Sheet URL</Form.Label>
+                  <Form.Control required type="text" placeholder="Enter URL" />
                   <Form.Text className="text-muted">
-                    A strong password between 8-16 characters long.
-                  </Form.Text>
-                </Form.Group>
-
-                <Form.Group controlId="formPassword2">
-                  <Form.Label>Confirm password</Form.Label>
-                  <Form.Control required type="password" placeholder="Password" />
-                  <Form.Text className="text-muted">
-                    Your passwords must match!
+                    Enter the URL for your STUDENT Google Sheet
                   </Form.Text>
                 </Form.Group>
                 
