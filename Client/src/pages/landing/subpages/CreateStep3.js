@@ -18,68 +18,37 @@ class CreateStep3 extends Component {
   //to display the error messages from the socket emissions. That is currently
   //not my priority, though it should be very easy to implement.
   createWorkspaceHandler = () => {
-    console.log("Clicked button in CreateStep1");
-    let url = document.getElementById('formURL').value;
+    console.log("Clicked button in CreateStep3");
+    let email = document.getElementById('formEmail').value;
+    let password = document.getElementById('formPassword').value;
+    let password2 = document.getElementById('formPassword2').value;
 
-    socket.emit("createStep1_p1", {url: url});
+    //client-sided checks... will also check in the backend
+    //check if valid email
+    if(true){
+      if(password===password2){
+        //check if passwords contain no special characters
+        if(true){
+          socket.emit("createStep3_p1", {email: email, password: password, password2: password2});
 
-    socket.on("sheetShared", (data)=>{
-      console.log("entered sheetShared");
-
-      if(data.shared === true){
-        this.setState({staffOK: true})
-      } 
-      if(data.shared === false){
-        this.setState({staffOK: false});
+        }else{
+          console.log("Password contains invalid characters.")
+        }
+      } else{
+        console.log("Your passwords didn't match!");
       }
-    
-      this.nextPart(url);
+    }else{
+      console.log("Invalid email address.")
+    }
 
-    });
-  }
-
-  //for the error messages!
-  nextPart = (url) =>{
-    let workspace = document.getElementById('formWorkspace').value;
-
-    socket.emit("createStep1_p2", {sharing: this.state.staffOK, name: workspace, url: url});
-
-
-    socket.on("workspaceStatus", (data)=>{
-      if(data.ok === true){
-        this.setState({workspaceOK: true});
-      }
-
-      if(data.ok === false){
-        this.setState({workspaceOK: false});
-      }
-      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
-      console.log(this.state.workspaceOK)
-    });
-
-    socket.on("urlStatus", (data)=>{
-      //just in case?
-      if(data.ok === true){
-        this.setState({staffOK: true});
-      }
-
-      if(data.ok === false){
-        this.setState({staffOK: false});
-      }
-
-      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
-      console.log(this.state.staffOK);
-    });
-
-
-    socket.on("approved", (data)=>{
+    socket.on("confirmation", (data)=>{
       console.log(data.msg);
-      if(this.props.step === "Step1" && this.state.workspaceOK === true && this.state.staffOK === true){
+      if(this.props.step === "Step3"){
         this.props.toNextStep();
       }
     });
-  }  
 
+  }
 
 
   //need to make the sheetsharing stuff an actual error message

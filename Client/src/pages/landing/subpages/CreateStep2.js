@@ -35,6 +35,9 @@ class CreateStep2 extends Component {
       }
 
       console.log(this.state.partnerOK);
+
+      
+      this.nextPart(urlPartner, urlStudent);
     });
     
     socket.on("studentShared", (data)=>{

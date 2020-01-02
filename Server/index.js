@@ -285,7 +285,50 @@ io.on('connection', function(socket){
 	});
 
 //-------------- CreateStep3.js --------------
+	socket.on("createStep3_p1", function(data){
+	    let email = data.email;
+	    let password = data.password;
+	    let password2 = data.password2;
 
+	    let emailOK = null;
+	    let passwordOK = null;
+
+	    //server-sided checks
+	    //check if valid email
+	    if(true){
+	    	emailOK = true;
+	    }
+	    else{
+	      console.log("Invalid email address.")
+	      emailOK = false;
+	    }
+
+
+    	if(password===password2){
+        	//check if passwords contain no special characters
+	        if(true){
+	        	socket.emit("createStep3_p1", {email: email, password: password, password2: password2});
+	        	passwordOK = true;
+	        }
+	        else{
+	        	console.log("Password contains invalid characters.")
+	        	passwordOK = false;
+	        }
+	    }
+	    else{
+    		console.log("Your passwords didn't match!");
+    		passwordOK = false;
+	    }
+
+	    if(emailOK && passwordOK){
+	    	socket.emit("confirmation", {msg: "Email and passwords are good! You're ready to go!"});
+	    	//function stuff to transfer the data in the unfinished dictionaries (workspacename + url)
+	    	//into the actual dictionaries workspacedictionary, urldictionary
+
+
+	    }
+
+	})
 
 
 
