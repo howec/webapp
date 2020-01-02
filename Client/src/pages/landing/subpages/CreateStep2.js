@@ -11,16 +11,124 @@ class CreateStep2 extends Component {
 
   constructor(props){
     super(props);
+    this.state = {partnerOK: null, studentOK: null}
   }
 
+
+  //HOWE: Note that the next steps for user quality of experience would be
+  //to display the error messages from the socket emissions. That is currently
+  //not my priority, though it should be very easy to implement.
+  createWorkspaceHandler = () => {
+    console.log("Clicked button in CreateStep2");
+    let urlPartner = document.getElementById('formPartnersSheet').value;
+    let urlStudent = document.getElementById('formStudentsSheet').value;
+
+    socket.emit("createStep2_p1", {urlPartner: urlPartner, urlStudent: urlStudent});
+
+    socket.on("partnerShared", (data)=>{
+      console.log("entered partnerShared");
+      if(data.shared === true){
+        this.setState({partnerOK: true})
+      } 
+      if(data.shared === false){
+        this.setState({partnerOK: false});
+      }
+
+      console.log(this.state.partnerOK);
+    });
+    
+    socket.on("studentShared", (data)=>{
+      console.log("entered studentShared");
+      if(data.shared === true){
+        this.setState({studentOK: true})
+      } 
+      if(data.shared === false){
+        this.setState({studentOK: false});
+      }
+
+      console.log(this.state.studentOK);
+
+      //doesn't matter which socket this function is called in... but I'm just doing it here
+      this.nextPart(urlPartner, urlStudent);
+
+    });
+    }
+
+
+  //for the error messages!
+  nextPart = (urlPartner, urlStudent) =>{
+
+
+      console.log(this.state.partnerOK);
+      console.log(this.state.studentOK);
+
+    socket.emit("createStep2_p2",
+      {partnerSharing: this.state.partnerOK, studentSharing: this.state.studentOK,
+      urlPartner: urlPartner, urlStudent: urlStudent});
+
+    socket.on("partnerStatus", (data)=>{
+      //just in case?
+      if(data.ok === true){
+        this.setState({partnerOK: true});
+      }
+
+      if(data.ok === false){
+        this.setState({partnerOK: false});
+      }
+
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+      console.log(this.state.partnerOK);
+    });
+
+
+    socket.on("studentStatus", (data)=>{
+      //just in case?
+      if(data.ok === true){
+        this.setState({studentOK: true});
+      }
+
+      if(data.ok === false){
+        this.setState({studentOK: false});
+      }
+
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+      console.log(this.state.studentOK);
+    });
+
+
+
+    socket.on("approved", (data)=>{
+      console.log(data.msg);
+      if(this.props.step === "Step2" && this.state.partnerOK === true && this.state.studentOK === true){
+        this.props.toNextStep();
+      }
+    });
+  
+  }  
+
+
+
+  //need to make the sheetsharing stuff an actual error message
   formSubmit = (event) => {
     event.preventDefault();
+    this.createWorkspaceHandler();
+    
+    if(this.state.partnerOK == true){
+      console.log("The sheet has been shared!");
+    } else{
+      console.log("The sheet hasn't been shared");
+    }
 
-    //socket emission checks
-
-    this.props.toNextStep();
+    if(this.state.studentOK == true){
+      console.log("The sheet has been shared!");
+    } else{
+      console.log("The sheet hasn't been shared");
+    }
 
   }
+
+
+
 
 
   render() {

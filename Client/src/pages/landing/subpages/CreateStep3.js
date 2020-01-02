@@ -14,12 +14,79 @@ class CreateStep3 extends Component {
   }
 
 
+  //HOWE: Note that the next steps for user quality of experience would be
+  //to display the error messages from the socket emissions. That is currently
+  //not my priority, though it should be very easy to implement.
+  createWorkspaceHandler = () => {
+    console.log("Clicked button in CreateStep1");
+    let url = document.getElementById('formURL').value;
+
+    socket.emit("createStep1_p1", {url: url});
+
+    socket.on("sheetShared", (data)=>{
+      console.log("entered sheetShared");
+
+      if(data.shared === true){
+        this.setState({staffOK: true})
+      } 
+      if(data.shared === false){
+        this.setState({staffOK: false});
+      }
+    
+      this.nextPart(url);
+
+    });
+  }
+
+  //for the error messages!
+  nextPart = (url) =>{
+    let workspace = document.getElementById('formWorkspace').value;
+
+    socket.emit("createStep1_p2", {sharing: this.state.staffOK, name: workspace, url: url});
+
+
+    socket.on("workspaceStatus", (data)=>{
+      if(data.ok === true){
+        this.setState({workspaceOK: true});
+      }
+
+      if(data.ok === false){
+        this.setState({workspaceOK: false});
+      }
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+      console.log(this.state.workspaceOK)
+    });
+
+    socket.on("urlStatus", (data)=>{
+      //just in case?
+      if(data.ok === true){
+        this.setState({staffOK: true});
+      }
+
+      if(data.ok === false){
+        this.setState({staffOK: false});
+      }
+
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+      console.log(this.state.staffOK);
+    });
+
+
+    socket.on("approved", (data)=>{
+      console.log(data.msg);
+      if(this.props.step === "Step1" && this.state.workspaceOK === true && this.state.staffOK === true){
+        this.props.toNextStep();
+      }
+    });
+  }  
+
+
+
+  //need to make the sheetsharing stuff an actual error message
   formSubmit = (event) => {
     event.preventDefault();
-
-    //socket emission checks
-    this.props.toNextStep();
-
+    this.createWorkspaceHandler();
+    
   }
 
 

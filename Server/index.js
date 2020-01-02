@@ -29,6 +29,8 @@ server.listen(PORT, () => console.log('Server has started on port ' + PORT));
 Global variables ----------------------------------------------
 */
 const activeUsers = {};
+const unfinishedWorkspaces = {};
+const unfinishedURLs = {};
 
 /*
 Load the workspaceDictionary into memory upon WebApp initialization.
@@ -41,16 +43,28 @@ try{
 }catch(error){
 	console.log(error);
 	workspaceDictionary = {};
-	writeData(workspaceDictionary);
+	writeWorkspaceData(workspaceDictionary);
 }
 
-let unfinishedWorkspaces = {};
+/*
+Load the urlDictionary into memory upon WebApp initialization.
+If no urlDictionary is found, then create an empty dictionary and store it in memory.
+*/
+let urlDictionary;
+try{
+	var contents = fs.readFileSync('./data/urlDictionary.json', 'utf8');
+	urlDictionary = JSON.parse(contents);
+}catch(error){
+	console.log(error);
+	urlDictionary = {};
+	writeURLData(urlDictionary);
+}
 
 
 /*
 Function to write the workspaceDictionary into memory, replacing it if it already exists.
 */
-function writeData(dict){
+function writeWorkspaceData(dict){
 		fs.writeFile("./data/workspaceDictionary.json", JSON.stringify(dict, null, 4), (err) => {
 		    if (err) {
 		        console.error(err);
@@ -59,6 +73,22 @@ function writeData(dict){
 		    console.log("File has been created");
 		});
 	}
+
+
+/*
+Function to write the urlDictionary into memory, replacing it if it already exists.
+*/
+function writeURLData(dict){
+		fs.writeFile("./data/urlDictionary.json", JSON.stringify(dict, null, 4), (err) => {
+		    if (err) {
+		        console.error(err);
+		        return;
+		    };
+		    console.log("File has been created");
+		});
+	}
+
+
 
 
 
@@ -76,36 +106,52 @@ io.on('connection', function(socket){
 
 
 	socket.on('disconnect', function(){
-		//temps are temporary values created before committing anything to memory such as during the create-workspace phase
-		let temps = activeUsers[socket.id];
+		let name = activeUsers[socket.id];
+		let urls;
+
+		if(unfinishedWorkspaces[name] !== undefined){
+			urls = unfinishedWorkspaces[name][1];
+
+			//removes any unfinished urls upon disconnect
+			delete unfinishedURLs[urls[0]];
+			delete unfinishedURLs[urls[1]];
+			delete unfinishedURLs[urls[2]];
+		}
+
 
 		//removes any unfinished workspaces upon disconnect
-		delete unfinishedWorkspaces[temps];
+		delete unfinishedWorkspaces[name];
 		delete activeUsers[socket.id];
 		console.log('a user disconnected:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
+
+	//-------- NavigationBar.js --------
 
 	socket.on('loggedout', function(){
 		delete activeUsers[socket.id];
 		console.log('a user logged out:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
 
-	//HOWE tdl
-	socket.on('FINALLY', function(data){
-		console.log(data.msg + " SocketID is: " + socket.id);
+	//-------- Login.js --------
+
+	//not sure where this actually is
+	socket.on("login", function(data){
+		//if valid login, then emit "access" to client and link socket to the scoped info within respective sheets
 	});
 
-	socket.on('workspaceSubmitted', function(data){
-		//HOWE to change!!!
-		if(data.workspace == "NAME"){
-			socket.emit("workspaceValidation", {valid: true});
-			console.log("Entered workspaceSubmitted");
-		}else{
-			socket.emit("workspaceValidation", {valid: false});
-		}
-	});
- 
+	//not sure where this actually is
+	socket.on("loginSubmitted", function(data){
+		console.log("Form has been submitted. workspace:" + data.workspace);
+		console.log("Form has been submitted. group:" + data.group);
+		console.log("Form has been submitted. email: " + data.email);
+		console.log("Form has been submitted. password: " + data.password);
 
+		//if match... assume true for now
+		socket.emit("loginValidation", {valid: false});
+
+	});
+
+	//not sure where this is
 	//HOWE PROBABLY CAN DELETE?
 	//will need to revise so as that email isn't the only thing that we're checking on
 	//this will probably need to be the authentication token
@@ -126,84 +172,157 @@ io.on('connection', function(socket){
 	});
 
 
+	//HOWE tdl... not sure where this is
+	socket.on('FINALLY', function(data){
+		console.log(data.msg + " SocketID is: " + socket.id);
+	});
 
-	socket.on("createWorkspace", function(data){
-		let name = data.name;
-		let url = data.url;
-		let sharing = data.sharing;
-
-		checkSheetSharing(url, socket);
-
-
-		if(checkWorkspaceAvailability(name, socket)){
-			//HOWE
-			//check if the url is 
-			if (checkURL(url)){
-				//HOWE
-				//need to check if the url has not been used before
-				if(unusedURL(url)){
-					//HOWE
-					//need to check if the url has been activated and shared with the google email
-					//need to create/delete a sheet as a test?
-					if(sharing == true){
-						unfinishedWorkspaces[name] = [socket.id, parseURL(url)];
-						socket.emit("workspaceStatus", {msg: "The workspace has been created!"});
-						console.log("The unfinished workspace association is: " + unfinishedWorkspaces[name]);
-						//has not officially been stored into memory yet. Sheet sharing privileges must first be verified
-					} else{
-						socket.emit("urlStatus", {msg: "URL has not been shared privileges."})
-					}
-				} else{
-					socket.emit("urlStatus", {msg: "URL has already been used."})
-				}
-			} else{
-				socket.emit("urlStatus", {msg: "URL is invalid! Make sure it's a valid link or properly formatted."});
-			}
+	socket.on('workspaceSubmitted', function(data){
+		//HOWE to change!!!
+		if(data.workspace == "NAME"){
+			socket.emit("workspaceValidation", {valid: true});
+			console.log("Entered workspaceSubmitted");
 		}else{
-			socket.emit("workspaceStatus", {msg: "This workspace name cannot be used."});
+			socket.emit("workspaceValidation", {valid: false});
+		}
+	});
+ 
+
+
+
+//-------------- CreateStep1.js --------------
+	socket.on("createStep1_p1", function(data){
+		let urlStaff = parseURL(data.url);
+
+		checkSheetSharing("sheetShared", urlStaff, socket);
+
+	});
+
+	socket.on("createStep1_p2", function(data){
+		let sharing = data.sharing;
+		let urlStaff = parseURL(data.url);
+		let name = data.name;
+
+		console.log("Sharing: " + sharing);
+		console.log("Name: " + name);
+		console.log("URL: " + urlStaff);
+
+		let workspaceOK = null;
+		let staffOK = null;
+
+
+		if(checkWorkspaceAvailability(name,socket)){
+			socket.emit("workspaceStatus", {ok: true, msg: "The workspace name is available!"});
+			workspaceOK = true;
+		}else{
+			socket.emit("workspaceStatus", {ok: false, msg: "This workspace name cannot be used."});
+			workspaceOK = false;
 		}
 
-	});
 
-	///need a socket that will work similarly for email/password... once email + password has been set, then unfinished gets transferred to workspacedictionary, then deleted
-
-
-	socket.on("login", function(data){
-		//if valid login, then emit "access" to client and link socket to the scoped info within respective sheets
-	});
+		staffOK = urlConditions("urlStatus", urlStaff, sharing, socket);
 
 
-	socket.on("loginSubmitted", function(data){
-		console.log("Form has been submitted. workspace:" + data.workspace);
-		console.log("Form has been submitted. group:" + data.group);
-		console.log("Form has been submitted. email: " + data.email);
-		console.log("Form has been submitted. password: " + data.password);
+		if(staffOK && workspaceOK){
+			unfinishedWorkspaces[name] = [socket.id, [urlStaff, "temp student", "temp partner"]];
+			unfinishedURLs[urlStaff] = name;
+			socket.emit("approved", {msg: "Workspace and URL both valid!"})
 
-		//if match... assume true for now
-		socket.emit("loginValidation", {valid: false});
+
+			console.log("the workspace stuff created from step1 is...")
+			console.log(unfinishedWorkspaces[name]);
+		}
+
+
 
 	});
 
 
+//-------------- CreateStep2.js --------------
 
+
+	socket.on("createStep2_p1", function(data){
+		let urlPartner = parseURL(data.urlPartner);
+		let urlStudent = parseURL(data.urlStudent);
+
+		checkSheetSharing("partnerShared", urlPartner, socket);
+		checkSheetSharing("studentShared", urlStudent, socket);
+
+	});
+
+	socket.on("createStep2_p2", function(data){
+
+		let partnerSharing = data.partnerSharing;
+		let urlPartner = parseURL(data.urlPartner);
+		let studentSharing = data.studentSharing;
+		let urlStudent = parseURL(data.urlStudent);
+		let name = activeUsers[socket.id];
+
+		console.log("urlPartner: " + urlPartner);
+		console.log("urlStudent: " + urlStudent);
+		console.log("Name: " + name);
+
+		let partnerOK = urlConditions("partnerStatus", urlPartner, partnerSharing, socket);
+		let studentOK = urlConditions("studentStatus", urlStudent, studentSharing, socket);
+
+
+		if(partnerOK && studentOK){
+			let prevs = unfinishedWorkspaces[name];
+			let socketID = prevs[0];
+			let urls = prevs[1];
+
+			urls[1] = urlStudent;
+			urls[2] = urlPartner;
+
+			unfinishedWorkspaces[name] = [socketID, urls];
+			unfinishedURLs[urlStudent] = name;
+			unfinishedURLs[urlPartner] = name;
+			socket.emit("approved", {msg: "Both URLs are valid!"})
+
+			console.log("the workspace stuff created from step2 is...")
+			console.log(unfinishedWorkspaces[name]);
+		}
+	});
+
+//-------------- CreateStep3.js --------------
+
+
+
+
+//End of socket listeners ----------------------------------------------
 });
 
 
+//Start of socket helper functions ----------------------------------------------
 
-//End of socket events ----------------------------------------------
+//Howe... will need to use the variable: unfinishedURLs
+function unusedURL(url){
+	return true;
+}
+
+//HOWE
+function checkURL(url){
+	return true;
+}
+
+//HOWE
+function parseURL(url){
+	return url;
+}
 
 
 
-function checkSheetSharing(url, sock){
+//Called for socket emissions in CreateStep1.js
+function checkSheetSharing(event, url, socket){
 	let doc = new GoogleSpreadsheet(url);
 
 	doc.useServiceAccountAuth(creds, function (err) {
 	  doc.getRows(1, function (err, rows){
 
 	  	if(rows != undefined){
-	  		sock.emit("sheetShared", {shared: true});
+	  		socket.emit(event, {shared: true});
 	  	} else{
-	  		sock.emit("sheetShared", {shared: false});
+	  		socket.emit(event, {shared: false});
 	  	}
 
 	  });
@@ -211,12 +330,13 @@ function checkSheetSharing(url, sock){
 }
 
 
+//Called for socket emissions in CreateStep1.js
 function checkWorkspaceAvailability(name, sock){
 	console.log("Name of the passed in workspace: " + name);
 	if (workspaceDictionary[name] == undefined){
 		if(unfinishedWorkspaces[name] == undefined || sock.id==unfinishedWorkspaces[name][0]){
 			console.log("This workspace name is available!");	
-			unfinishedWorkspaces[name] = [sock.id, "temp value -- to fill in with URL later"];
+			unfinishedWorkspaces[name] = [sock.id, ["temp staff", "temp student", "temp partner"]];
 			console.log(unfinishedWorkspaces[name]);
 
 			activeUsers[sock.id] = name;
@@ -224,11 +344,48 @@ function checkWorkspaceAvailability(name, sock){
 			return true;
 		}
 	}
-
-
 	console.log("This workspace has already been created.");
 	return false;
 }
+
+
+function urlConditions(event, url, sharing, socket){
+	let urlOK = null;
+
+	//HOWE
+	//Even though we already know if a URL is good or not from part1, this generates the error message for the client
+	if (checkURL(url)){
+		//HOWE
+		//need to check if the url has not been used before
+		if(unusedURL(url)){
+			//HOWE
+			//need to check if the url has been activated and shared with the google email
+			//need to create/delete a sheet as a test?
+			if(sharing == true){
+				socket.emit(event, {ok: true, msg: "URL looks good!"});
+				urlOK = true;
+				//has not officially been stored into memory yet. Sheet sharing privileges must first be verified
+			} else{
+				socket.emit(event, {ok: false, msg: "URL has not been shared privileges."})
+				urlOK = false;
+			}
+		} else{
+			socket.emit(event, {ok: false, msg: "URL has already been used."})
+			urlOK = false;
+		}
+	} else{
+		socket.emit(event, {ok: false, msg: "URL is invalid! Make sure it's a valid link or properly formatted."});
+		urlOK = false;
+	}
+
+	return urlOK;
+
+}
+
+
+
+//End of socket helper functions ----------------------------------------------
+
 
 // let partner = '1X2udtqxCNpha3V0GV26Gmz0mADe_W6lfZW_z4YzOTcI';
 let partner = '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg';
@@ -248,20 +405,6 @@ var staffSheet = '';
 setPartnerSpreadsheetURL(partner);
 setStaffSpreadsheetURL(staff);
 
-//Howe
-function unusedURL(url){
-	return true;
-}
-
-//HOWE
-function checkURL(url){
-	return true;
-}
-
-//HOWE
-function parseURL(url){
-	return url;
-}
 
 function setPartnerSpreadsheetURL(url){
 	partnerSheet = new GoogleSpreadsheet(parseURL(url));

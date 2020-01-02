@@ -11,47 +11,76 @@ class CreateStep1 extends Component {
 
   constructor(props){
     super(props);
-    this.state = {sheetShared: null};
+    this.state = {workspaceOK: null, staffOK: null};
   }
 
 
-  responseGoogle = (response) => {
-    console.log("FAILED TO SIGN IN. " + JSON.stringify(response));
-  }
-
-
+  //HOWE: Note that the next steps for user quality of experience would be
+  //to display the error messages from the socket emissions. That is currently
+  //not my priority, though it should be very easy to implement.
   createWorkspaceHandler = () => {
-    let workspace = document.getElementById('formWorkspace').value;
+    console.log("Clicked button in CreateStep1");
     let url = document.getElementById('formURL').value;
 
-
-    socket.emit("createWorkspace", {sharing: this.state.sheetShared, name: workspace, url: url});
-    console.log("Clicked workspace button");
-
-    socket.on("workspaceStatus", function(data){
-      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
-    })
-
-    socket.on("urlStatus", function(data){
-      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
-    })
+    socket.emit("createStep1_p1", {url: url});
 
     socket.on("sheetShared", (data)=>{
       console.log("entered sheetShared");
 
-      //need to check if the url hasn't been used before
-      if(data.shared == true){
-        this.setState({sheetShared: true})
+      if(data.shared === true){
+        this.setState({staffOK: true})
       } 
+      if(data.shared === false){
+        this.setState({staffOK: false});
+      }
+    
+      this.nextPart(url);
 
-      if(data.shared == true && this.props.step == "Step1"){
-        this.props.toNextStep();
+    });
+  }
+
+  //for the error messages!
+  nextPart = (url) =>{
+    let workspace = document.getElementById('formWorkspace').value;
+
+    socket.emit("createStep1_p2", {sharing: this.state.staffOK, name: workspace, url: url});
+
+
+    socket.on("workspaceStatus", (data)=>{
+      if(data.ok === true){
+        this.setState({workspaceOK: true});
       }
 
+      if(data.ok === false){
+        this.setState({workspaceOK: false});
+      }
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+      console.log(this.state.workspaceOK)
+    });
+
+    socket.on("urlStatus", (data)=>{
+      //just in case?
+      if(data.ok === true){
+        this.setState({staffOK: true});
+      }
+
+      if(data.ok === false){
+        this.setState({staffOK: false});
+      }
+
+      console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
+      console.log(this.state.staffOK);
     });
 
 
-  }
+    socket.on("approved", (data)=>{
+      console.log(data.msg);
+      if(this.props.step === "Step1" && this.state.workspaceOK === true && this.state.staffOK === true){
+        this.props.toNextStep();
+      }
+    });
+  }  
+
 
 
   //need to make the sheetsharing stuff an actual error message
@@ -59,13 +88,11 @@ class CreateStep1 extends Component {
     event.preventDefault();
     this.createWorkspaceHandler();
     
-    if(this.state.sheetShared == true){
+    if(this.state.staffOK == true){
       console.log("The sheet has been shared!");
     } else{
       console.log("The sheet hasn't been shared");
     }
-
-
   }
 
 
