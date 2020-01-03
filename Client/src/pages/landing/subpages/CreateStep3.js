@@ -85,7 +85,7 @@ class CreateStep3 extends Component {
                   <Form.Label>Password</Form.Label>
                   <Form.Control required type="password" placeholder="Password" />
                   <Form.Text className="text-muted">
-                    A strong password between 8-16 characters long.
+                    An alphanumeric password between 8-16 characters long.
                   </Form.Text>
                 </Form.Group>
 

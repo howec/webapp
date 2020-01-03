@@ -36,7 +36,7 @@ class CreateStep2 extends Component {
 
       console.log(this.state.partnerOK);
 
-      
+
       this.nextPart(urlPartner, urlStudent);
     });
     
@@ -69,6 +69,9 @@ class CreateStep2 extends Component {
       {partnerSharing: this.state.partnerOK, studentSharing: this.state.studentOK,
       urlPartner: urlPartner, urlStudent: urlStudent});
 
+
+
+
     socket.on("partnerStatus", (data)=>{
       //just in case?
       if(data.ok === true){
@@ -98,6 +101,10 @@ class CreateStep2 extends Component {
       console.log(this.state.studentOK);
     });
 
+
+    socket.on("duplicate", (data)=>{
+      console.log(data.msg);
+    });
 
 
     socket.on("approved", (data)=>{

@@ -265,8 +265,12 @@ io.on('connection', function(socket){
 		let partnerOK = urlConditions("partnerStatus", urlPartner, partnerSharing, socket);
 		let studentOK = urlConditions("studentStatus", urlStudent, studentSharing, socket);
 
+		if(urlPartner === urlStudent){
+			socket.emit("duplicate", {msg: "The URLs you've entered are identical. They must be unique."})
+		}
 
-		if(partnerOK && studentOK){
+
+		if(partnerOK && studentOK && (urlPartner !== urlStudent)){
 			let prevs = unfinishedWorkspaces[name];
 			let socketID = prevs[0];
 			let urls = prevs[1];
@@ -324,6 +328,19 @@ io.on('connection', function(socket){
 	    	socket.emit("confirmation", {msg: "Email and passwords are good! You're ready to go!"});
 	    	//function stuff to transfer the data in the unfinished dictionaries (workspacename + url)
 	    	//into the actual dictionaries workspacedictionary, urldictionary
+		
+
+			let name = activeUsers[socket.id];
+			let urls = unfinishedWorkspaces[name][1];
+
+
+
+			//removes unfinished urls after transferring them to urlDictionary
+			delete unfinishedURLs[urls[0]];
+			delete unfinishedURLs[urls[1]];
+			delete unfinishedURLs[urls[2]];    	
+			//removes unfinished workspace because it should now have been transferred to workspaceDictionary
+			delete unfinishedWorkspaces[name];
 
 
 	    }
