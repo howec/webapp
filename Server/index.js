@@ -1,3 +1,13 @@
+/*
+Terminology:
+	Gsheet = Googlesheet (overarching container doc)
+	Wsheet = Worksheet (individiual tabs in doc)
+
+	Worksheets will be explicitly labeled as a Wsheet. Unless stated otherwise, all sheets are a Gsheet.
+	Todo: relabel all sheets as Gsheets; convention going forward is to name a sheet as a Gsheet.
+
+*/
+
 //setup
 const fs = require('fs');
 
@@ -333,6 +343,15 @@ io.on('connection', function(socket){
 			let name = activeUsers[socket.id];
 			let urls = unfinishedWorkspaces[name][1];
 
+			let staffURL = urls[0];
+			let studentURL = urls[1];
+			let partnerURL = urls[2];
+			//should create the persistence layers (Credentials, Staff Inputs) in staffURL
+			console.log("Entering setupStaffSheet... about to apply credentials");
+			setupStaffSheet(staffURL, {email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
+			//access Credentials
+
+
 
 
 			//removes unfinished urls after transferring them to urlDictionary
@@ -374,10 +393,10 @@ function parseURL(url){
 
 //Called for socket emissions in CreateStep1.js
 function checkSheetSharing(event, url, socket){
-	let doc = new GoogleSpreadsheet(url);
+	let gsheet = new GoogleSpreadsheet(url);
 
-	doc.useServiceAccountAuth(creds, function (err) {
-	  doc.getRows(1, function (err, rows){
+	gsheet.useServiceAccountAuth(creds, function (err) {
+	  gsheet.getRows(1, function (err, rows){
 
 	  	if(rows != undefined){
 	  		socket.emit(event, {shared: true});
@@ -443,9 +462,194 @@ function urlConditions(event, url, sharing, socket){
 }
 
 
+// setupStaffSheet(staffURL, {email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
+function setupStaffSheet(staffURL, data){
+	let staffGsheet = new GoogleSpreadsheet(staffURL);
+
+
+	// Authenticate with the Google Spreadsheets API.
+	staffGsheet.useServiceAccountAuth(creds, function (err) {
+
+	  // Get all of the rows from the spreadsheet.
+	  staffGsheet.getInfo(function (err) {
+
+	  	function persistenceCreated(wsName){
+	  		console.log(wsName);
+
+	  		let headersArray;
+	  		if (wsName === "Staff Inputs"){
+	  			headersArray = ["Selected Spreadsheet Columns", "Updates"];
+	  		}
+
+	  		if (wsName === "Credentials"){
+	  			headersArray = ["Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"];
+	  		}
+
+	  		console.log(headersArray);
+	  		for(const ws of staffGsheet.worksheets){
+	  			console.log("For loop inside persistenceCreated: " + ws);
+	  			if(ws.title == wsName){
+	  				return true;
+	  			}
+	  		}
+
+	  		//need to check if adding rows will automatically expand the spreadsheet, or if the amount of space needs to be specified first
+	  		staffGsheet.addWorksheet({title: wsName, headers: headersArray});
+	  		
+	  		return false;
+	  	}
+
+	  	let staffInputExists = persistenceCreated("Staff Inputs");
+	  	let credentialsExists = persistenceCreated("Credentials");
+
+	  	if (staffInputExists === false){
+	  		console.log("Staff Inputs has been created");
+	  		//no values needed to update currently
+	  		// console.log("checking out staffInputExists");
+	  		// console.log(staffGsheet.worksheets);
+
+	  	} else{
+	  		console.log("Staff Inputs already exists")
+	  	}
+
+	  	//Adding data to the worksheet!
+	  	if (credentialsExists === false){
+
+	  		setTimeout(function(){
+	  			setupStaffSheet(staffURL, data);
+	  		}, 3000);
+	  		console.log("123");
+	  		console.log("Credentials has not yet appeared in gsheet");
+
+
+	  	} else{
+	  		console.log("Credentials already exists")
+	  		console.log("456");
+
+
+
+			let keyVals = {"Staff Email": data.email, "Staff Password": data.password,
+			"Student Sheet URL": data.studentURL, "Partner Sheet URL": data.partnerURL};
+	  		
+	  		getWsheet(staffGsheet, "Credentials", applyCredentials(keyVals));
+
+
+	  	}
+
+	  	// console.log("Inside updateStaffSheet: " + data.worksheets[0].title);
+
+	  });
+	});
+}
+
+function getWsheet(gsheet, wsheetName, funcToApply){
+	gsheet.getInfo(callback = () =>{
+		/*
+			id - the URL/id as returned from google
+			title - the title of the document
+			updated - last updated timestamp
+			author - auth info in an object
+			name - author name
+			email - author email
+			worksheets - an array of SpreadsheetWorksheet objects
+		*/
+		let worksheets = gsheet.worksheets;
+
+		console.log("above for loop");
+		for(const worksheet of worksheets){
+			if(worksheet !== null || worksheet !== undefined){
+				console.log(worksheet.title);
+				if(worksheet.title === wsheetName){
+					console.log("MATCH FOUND");
+					//function passed in here
+					funcToApply(gsheet, wsheetName);
+				}
+			}
+		}
+
+	});
+
+}
+// getWsheet(new GoogleSpreadsheet("18ugcQrxTlo2I3MzTrfMLPLI4HYAVNRnwFaF54KI7jZA"), "References", {});
+
+//must return a functin
+function applyCredentials(data){
+	console.log(data);
+	let keyVals = data;
+
+	addRowToSheet = (gsheet, wsheetName) =>{
+		console.log("made it to the hof in applyCredentials");
+		console.log("1: " + JSON.stringify(keyVals));
+		console.log("2: " + JSON.stringify(gsheet));
+
+		let wsheetIndex = getWsheetIndex(gsheet, wsheetName);
+		//careful of null values, but it shouldn't be an issue here
+
+		gsheet.addRow(wsheetIndex, keyVals, function(err){});
+	}
+
+	return addRowToSheet;
+}
+
+function getWsheetIndex(gsheet, wsheetName){
+	let count = 0;
+
+	for(const wsheet of gsheet.worksheets){
+		console.log("inside for loop");
+		console.log(wsheet);
+
+		count = count + 1;
+		if(wsheet.title == wsheetName){
+			return count;
+		}
+	}
+	return null;
+}
+
+//for use in the actual staff page
+function getColumns(gsheet, wsheet, somefunc){
+	let temp = {}
+
+	// Authenticate with the Google Spreadsheets API.
+	gsheet.useServiceAccountAuth(creds, function (err) {
+		gsheet.getInfo(callback = () =>{
+
+			/*
+				id - the URL/id as returned from google
+				title - the title of the document
+				updated - last updated timestamp
+				author - auth info in an object
+				name - author name
+				email - author email
+				worksheets - an array of SpreadsheetWorksheet objects
+			*/
+
+
+		});
+
+	  // Get all of the rows from the spreadsheet.
+	  sheet.getRows(1, function (err, rows) {
+
+	  	var count = 0;
+	    for (const key in rows[0]){
+	    	temp[count] = key;
+	    	count = count + 1;
+	    }
+	    partnerColumns = temp;
+
+	    //partnerColumns now has a value
+		console.log("I've been called");
+		console.log(rows[0][partnerColumns[7]]);
+		console.log(partnerColumns);
+	  });
+	});
+}
+
+
+
 
 //End of socket helper functions ----------------------------------------------
-
+//Beginning of maybe useful legacy code
 
 // let partner = '1X2udtqxCNpha3V0GV26Gmz0mADe_W6lfZW_z4YzOTcI';
 let partner = '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg';
