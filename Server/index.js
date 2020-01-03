@@ -1,4 +1,12 @@
 /*
+TODO:
+	Must add password hashing to both frontend/backend
+	Function to restore/reset password... only for the backend
+	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
+	Less worried about doing this in account creation, though it is theoretically possible that someone jams
+		the server by using a script to delete the worksheet the server makes immediately, causing potential null
+		exceptions
+
 Terminology:
 	Gsheet = Googlesheet (overarching container doc)
 	Wsheet = Worksheet (individiual tabs in doc)
@@ -230,12 +238,12 @@ io.on('connection', function(socket){
 		}
 
 
+		//should have put urlStaff into unfinishedURLs
 		staffOK = urlConditions("urlStatus", urlStaff, sharing, socket);
 
 
 		if(staffOK && workspaceOK){
 			unfinishedWorkspaces[name] = [socket.id, [urlStaff, "temp student", "temp partner"]];
-			unfinishedURLs[urlStaff] = name;
 			socket.emit("approved", {msg: "Workspace and URL both valid!"})
 
 
@@ -285,12 +293,11 @@ io.on('connection', function(socket){
 			let socketID = prevs[0];
 			let urls = prevs[1];
 
+			//update urls values
 			urls[1] = urlStudent;
 			urls[2] = urlPartner;
 
 			unfinishedWorkspaces[name] = [socketID, urls];
-			unfinishedURLs[urlStudent] = name;
-			unfinishedURLs[urlPartner] = name;
 			socket.emit("approved", {msg: "Both URLs are valid!"})
 
 			console.log("the workspace stuff created from step2 is...")
@@ -337,7 +344,7 @@ io.on('connection', function(socket){
 	    if(emailOK && passwordOK){
 	    	socket.emit("confirmation", {msg: "Email and passwords are good! You're ready to go!"});
 	    	//function stuff to transfer the data in the unfinished dictionaries (workspacename + url)
-	    	//into the actual dictionaries workspacedictionary, urldictionary
+	    	//into the actual dictionaries workspaceDictionary, urlDictionary
 		
 
 			let name = activeUsers[socket.id];
@@ -352,16 +359,21 @@ io.on('connection', function(socket){
 			//access Credentials
 
 
+			workspaceDictionary[name] = staffURL;
+			writeWorkspaceData(workspaceDictionary);
 
+			urlDictionary[staffURL] = name;
+			urlDictionary[studentURL] = name;
+			urlDictionary[partnerURL] = name;
+			writeURLData(urlDictionary);
 
+	
 			//removes unfinished urls after transferring them to urlDictionary
-			delete unfinishedURLs[urls[0]];
-			delete unfinishedURLs[urls[1]];
-			delete unfinishedURLs[urls[2]];    	
+			delete unfinishedURLs[staffURL];
+			delete unfinishedURLs[studentURL];
+			delete unfinishedURLs[partnerURL];    	
 			//removes unfinished workspace because it should now have been transferred to workspaceDictionary
 			delete unfinishedWorkspaces[name];
-
-
 	    }
 
 	})
@@ -374,12 +386,38 @@ io.on('connection', function(socket){
 
 //Start of socket helper functions ----------------------------------------------
 
-//Howe... will need to use the variable: unfinishedURLs
-function unusedURL(url){
-	return true;
+//don't forget to also check urlDictionary
+function unusedURL(url, sid){
+	if(urlDictionary[url] !== undefined){
+		return false;
+	}
+
+
+	if(unfinishedURLs[url] === undefined){
+		unfinishedURLs[url] = sid; //this is just a filler value
+		return true;
+	}
+
+	let name = activeUsers[sid];
+	let urls;
+
+	if(unfinishedWorkspaces[name] !== undefined){
+		urls = unfinishedWorkspaces[name][1];
+		let staffURL = urls[0]
+
+		if(url !== staffURL){
+			unfinishedURLs[url] = sid; //this is just a filler value
+			return true;
+		}//else proceed to return false, because url (which is either student/partner) = staffURL, which is bad
+	
+	}
+
+	return false;
 }
 
 //HOWE
+//we've already passed the url through a parser, but we need to check if the
+//parser was ok
 function checkURL(url){
 	return true;
 }
@@ -434,13 +472,16 @@ function urlConditions(event, url, sharing, socket){
 	//HOWE
 	//Even though we already know if a URL is good or not from part1, this generates the error message for the client
 	if (checkURL(url)){
-		//HOWE
-		//need to check if the url has not been used before
-		if(unusedURL(url)){
+		//checks if the URL has been used before. If it has, then it double checks the socket's id
+		//in case of a double submission attempt from before. This allows a person who tried to claim the url
+		//to proceed if they had an error before
+		if(unusedURL(url, socket.id)){
 			//HOWE
 			//need to check if the url has been activated and shared with the google email
 			//need to create/delete a sheet as a test?
-			if(sharing == true){
+			if(sharing === true){
+				//if all good, then add it to the unfinishedURLs dictionary
+				//1 is a temp value
 				socket.emit(event, {ok: true, msg: "URL looks good!"});
 				urlOK = true;
 				//has not officially been stored into memory yet. Sheet sharing privileges must first be verified
