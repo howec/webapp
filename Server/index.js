@@ -348,7 +348,7 @@ io.on('connection', function(socket){
 			let partnerURL = urls[2];
 			//should create the persistence layers (Credentials, Staff Inputs) in staffURL
 			console.log("Entering setupStaffSheet... about to apply credentials");
-			setupStaffSheet(staffURL, {email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
+			setupStaffSheet(staffURL, {workspace: name, email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
 			//access Credentials
 
 
@@ -482,7 +482,7 @@ function setupStaffSheet(staffURL, data){
 	  		}
 
 	  		if (wsName === "Credentials"){
-	  			headersArray = ["Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"];
+	  			headersArray = ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"];
 	  		}
 
 	  		console.log(headersArray);
@@ -493,55 +493,39 @@ function setupStaffSheet(staffURL, data){
 	  			}
 	  		}
 
-	  		//need to check if adding rows will automatically expand the spreadsheet, or if the amount of space needs to be specified first
 	  		staffGsheet.addWorksheet({title: wsName, headers: headersArray});
 	  		
 	  		return false;
 	  	}
 
-	  	let staffInputExists = persistenceCreated("Staff Inputs");
-	  	let credentialsExists = persistenceCreated("Credentials");
 
-	  	if (staffInputExists === false){
-	  		console.log("Staff Inputs has been created");
-	  		//no values needed to update currently
-	  		// console.log("checking out staffInputExists");
-	  		// console.log(staffGsheet.worksheets);
-
+	  	if (!persistenceCreated("Staff Inputs")){
+	  		console.log("Staff Inputs is being created");
 	  	} else{
-	  		console.log("Staff Inputs already exists")
+	  		console.log("Staff Inputs has been created")
 	  	}
 
 	  	//Adding data to the worksheet!
-	  	if (credentialsExists === false){
-
+	  	if (!persistenceCreated("Credentials")){
+	  		console.log("Credentials is being created");
+	  		
 	  		setTimeout(function(){
 	  			setupStaffSheet(staffURL, data);
 	  		}, 3000);
-	  		console.log("123");
-	  		console.log("Credentials has not yet appeared in gsheet");
-
-
 	  	} else{
-	  		console.log("Credentials already exists")
-	  		console.log("456");
+	  		console.log("Credentials has been created");
 
-
-
-			let keyVals = {"Staff Email": data.email, "Staff Password": data.password,
+			let keyVals = {"Workspace Name": data.workspace, "Staff Email": data.email, "Staff Password": data.password,
 			"Student Sheet URL": data.studentURL, "Partner Sheet URL": data.partnerURL};
 	  		
 	  		getWsheet(staffGsheet, "Credentials", applyCredentials(keyVals));
-
-
 	  	}
-
-	  	// console.log("Inside updateStaffSheet: " + data.worksheets[0].title);
 
 	  });
 	});
 }
 
+//function that retrieves the desired wSheet from the gsheet for you to apply a function on.
 function getWsheet(gsheet, wsheetName, funcToApply){
 	gsheet.getInfo(callback = () =>{
 		/*
@@ -559,14 +543,12 @@ function getWsheet(gsheet, wsheetName, funcToApply){
 		for(const worksheet of worksheets){
 			if(worksheet !== null || worksheet !== undefined){
 				console.log(worksheet.title);
+				//ensures no null errors
 				if(worksheet.title === wsheetName){
-					console.log("MATCH FOUND");
-					//function passed in here
-					funcToApply(gsheet, wsheetName);
+					funcToApply(worksheet);
 				}
 			}
 		}
-
 	});
 
 }
@@ -577,20 +559,15 @@ function applyCredentials(data){
 	console.log(data);
 	let keyVals = data;
 
-	addRowToSheet = (gsheet, wsheetName) =>{
-		console.log("made it to the hof in applyCredentials");
-		console.log("1: " + JSON.stringify(keyVals));
-		console.log("2: " + JSON.stringify(gsheet));
-
-		let wsheetIndex = getWsheetIndex(gsheet, wsheetName);
-		//careful of null values, but it shouldn't be an issue here
-
-		gsheet.addRow(wsheetIndex, keyVals, function(err){});
+	addRowToSheet = (wsheet) =>{
+  		//need to check if adding rows will automatically expand the spreadsheet, or if the amount of space needs to be specified first
+		wsheet.addRow(keyVals, function(err){});
 	}
 
 	return addRowToSheet;
 }
 
+//maybe not needed?
 function getWsheetIndex(gsheet, wsheetName){
 	let count = 0;
 
