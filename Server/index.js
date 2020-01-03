@@ -1,18 +1,20 @@
 /*
-TODO:
-	Must add password hashing to both frontend/backend
-	Function to restore/reset password... only for the backend
-	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
-	Less worried about doing this in account creation, though it is theoretically possible that someone jams
-		the server by using a script to delete the worksheet the server makes immediately, causing potential null
-		exceptions
-
 Terminology:
 	Gsheet = Googlesheet (overarching container doc)
 	Wsheet = Worksheet (individiual tabs in doc)
 
 	Worksheets will be explicitly labeled as a Wsheet. Unless stated otherwise, all sheets are a Gsheet.
 	Todo: relabel all sheets as Gsheets; convention going forward is to name a sheet as a Gsheet.
+
+TODO:
+	Must add password hashing to both frontend/backend
+	Function to restore/reset password... only for the backend
+	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
+	Less worried about doing this in account creation, though it is theoretically possible that someone jams
+		the server by using a script to delete the worksheet the server makes immediately, causing potential null
+		exceptions. --> TESTED: will be fine. No null exceptions occur if the server attempts to add a row into
+		a non-existent wsheet. HOWEVER, must still be careful of getter methods when the clients request data
+		upon login.
 
 */
 
