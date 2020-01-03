@@ -109,6 +109,10 @@ class Login extends Component {
                   
                   {this.workspaceError()}
 
+                  <Row horizontal='center'>
+                    <Button variant="primary" type="submit">Go!</Button>
+                  </Row>
+
                   <Row horizontal = 'center'>
                     <GoogleLogin
                       clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
@@ -120,11 +124,6 @@ class Login extends Component {
                   </Row>
 
                 </Form>
-              </Row>
-
-
-              <Row horizontal='center'>
-                <Button variant="primary" onClick = {this.testing}>TEST</Button>
               </Row>
 
             </Column>
