@@ -8,6 +8,7 @@ Terminology:
 
 TODO:
 	Must add password hashing to both frontend/backend
+	On the topic of security, may want to consider hmacs, encryption, etc.
 	Function to restore/reset password... only for the backend
 	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
 	Less worried about doing this in account creation, though it is theoretically possible that someone jams
@@ -30,7 +31,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const http = require('http');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 const router = require('./router');
 
@@ -155,18 +156,21 @@ io.on('connection', function(socket){
 	//-------- Login.js --------
 
 	//not sure where this actually is
-	socket.on("login", function(data){
-		//if valid login, then emit "access" to client and link socket to the scoped info within respective sheets
-	});
-
-	//not sure where this actually is
 	socket.on("loginSubmitted", function(data){
 		console.log("Form has been submitted. workspace:" + data.workspace);
 		console.log("Form has been submitted. group:" + data.group);
 		console.log("Form has been submitted. email: " + data.email);
 		console.log("Form has been submitted. password: " + data.password);
 
-		//if match... assume true for now
+		//on successful login, submit all the information over
+		//information (NavigationBar): url & name from staff... if needed
+		//information (page on client): personal doc information (all of it)
+			//information for staff: columns to allow partners to see, current progress for everyone
+			//information for partner: student profiles based on columns, student responses
+			//information for student: partner responses (interview, reject, acceptance, waitlist)
+		//status update for the person, taking parameter (group and email)
+			//email is used to look at the applicant's response, NOT fields.
+			//
 		socket.emit("loginValidation", {valid: false});
 
 	});
@@ -360,7 +364,6 @@ io.on('connection', function(socket){
 			setupStaffSheet(staffURL, {workspace: name, email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
 			//access Credentials
 
-
 			workspaceDictionary[name] = staffURL;
 			writeWorkspaceData(workspaceDictionary);
 
@@ -388,35 +391,6 @@ io.on('connection', function(socket){
 
 //Start of socket helper functions ----------------------------------------------
 
-//don't forget to also check urlDictionary
-function unusedURL(url, sid){
-	if(urlDictionary[url] !== undefined){
-		return false;
-	}
-
-
-	if(unfinishedURLs[url] === undefined){
-		unfinishedURLs[url] = sid; //this is just a filler value
-		return true;
-	}
-
-	let name = activeUsers[sid];
-	let urls;
-
-	if(unfinishedWorkspaces[name] !== undefined){
-		urls = unfinishedWorkspaces[name][1];
-		let staffURL = urls[0]
-
-		if(url !== staffURL){
-			unfinishedURLs[url] = sid; //this is just a filler value
-			return true;
-		}//else proceed to return false, because url (which is either student/partner) = staffURL, which is bad
-	
-	}
-
-	return false;
-}
-
 //HOWE
 //we've already passed the url through a parser, but we need to check if the
 //parser was ok
@@ -429,16 +403,42 @@ function parseURL(url){
 	return url;
 }
 
+//this will store ANY url recently submitted into a temporary memory space, which is cleared on disconnect
+function unusedURL(url, sid){
+	if(urlDictionary[url] !== undefined){
+		return false;
+	}
+
+	if(unfinishedURLs[url] === undefined){
+		unfinishedURLs[url] = 1; //this is just a filler value
+		return true;
+	}
+
+	let name = activeUsers[sid];
+	let urls;
+
+	//any URL entered on second page cannot equal the staffURL associated with the workspace recently made
+	if(unfinishedWorkspaces[name] !== undefined){
+		urls = unfinishedWorkspaces[name][1];
+		let staffURL = urls[0]
+
+		if(url !== staffURL){
+			unfinishedURLs[url] = 1; //this is just a filler value
+			return true;
+		}//else proceed to return false, because url (which is either student/partner) = staffURL, which is bad
+	}
+	return false;
+}
 
 
 //Called for socket emissions in CreateStep1.js
 function checkSheetSharing(event, url, socket){
 	let gsheet = new GoogleSpreadsheet(url);
+	console.log("In checkSheetSharing");
 
 	gsheet.useServiceAccountAuth(creds, function (err) {
 	  gsheet.getRows(1, function (err, rows){
-
-	  	if(rows != undefined){
+	  	if(rows !== undefined){
 	  		socket.emit(event, {shared: true});
 	  	} else{
 	  		socket.emit(event, {shared: false});
@@ -474,19 +474,16 @@ function urlConditions(event, url, sharing, socket){
 	//HOWE
 	//Even though we already know if a URL is good or not from part1, this generates the error message for the client
 	if (checkURL(url)){
-		//checks if the URL has been used before. If it has, then it double checks the socket's id
-		//in case of a double submission attempt from before. This allows a person who tried to claim the url
-		//to proceed if they had an error before
+		//checks if any of the URLs were recently used
 		if(unusedURL(url, socket.id)){
-			//HOWE
-			//need to check if the url has been activated and shared with the google email
-			//need to create/delete a sheet as a test?
+			//Howe
+			//sharing is based on client values which were initially passed on from Server. Theoretically susceptible to attack
+			//INSTEAD, it may be better to store these into memory somehow (new or current dictionary?) and load them instead
+			//not important right now. will get back to later as an optimization.
 			if(sharing === true){
-				//if all good, then add it to the unfinishedURLs dictionary
-				//1 is a temp value
+				//Has not officially been stored into memory yet. Sheet sharing privileges must first be verified
 				socket.emit(event, {ok: true, msg: "URL looks good!"});
 				urlOK = true;
-				//has not officially been stored into memory yet. Sheet sharing privileges must first be verified
 			} else{
 				socket.emit(event, {ok: false, msg: "URL has not been shared privileges."})
 				urlOK = false;
@@ -499,9 +496,30 @@ function urlConditions(event, url, sharing, socket){
 		socket.emit(event, {ok: false, msg: "URL is invalid! Make sure it's a valid link or properly formatted."});
 		urlOK = false;
 	}
-
 	return urlOK;
+}
 
+
+//to generalize function for extendability to other persistences in partner/student
+function persistenceCreated(gSheet, addSheetsList){
+	//addSheetsList will be structured as: [wsName, [headers for wsName]];
+
+	let wsName = addSheetsList[0];
+	let headersArray = addSheetsList[1];
+	console.log(wsName);
+
+	console.log(headersArray);
+	for(const ws of gSheet.worksheets){
+		console.log("For loop inside persistenceCreated: " + ws);
+		if(ws.title === wsName){
+			return true;
+		}
+	}
+
+	console.log("Added headers to worksheet: " + headersArray);
+	gSheet.addWorksheet({title: wsName, headers: headersArray}, function(err){});
+	
+	return false;
 }
 
 
@@ -509,53 +527,29 @@ function urlConditions(event, url, sharing, socket){
 function setupStaffSheet(staffURL, data){
 	let staffGsheet = new GoogleSpreadsheet(staffURL);
 
-
 	// Authenticate with the Google Spreadsheets API.
 	staffGsheet.useServiceAccountAuth(creds, function (err) {
 
 	  // Get all of the rows from the spreadsheet.
 	  staffGsheet.getInfo(function (err) {
+	  	console.log("Inside setupStaffSheet");
 
-	  	function persistenceCreated(wsName){
-	  		console.log(wsName);
-
-	  		let headersArray;
-	  		if (wsName === "Staff Inputs"){
-	  			headersArray = ["Selected Spreadsheet Columns", "Updates"];
-	  		}
-
-	  		if (wsName === "Credentials"){
-	  			headersArray = ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"];
-	  		}
-
-	  		console.log(headersArray);
-	  		for(const ws of staffGsheet.worksheets){
-	  			console.log("For loop inside persistenceCreated: " + ws);
-	  			if(ws.title == wsName){
-	  				return true;
-	  			}
-	  		}
-
-	  		staffGsheet.addWorksheet({title: wsName, headers: headersArray});
-	  		
-	  		return false;
-	  	}
-
-
-	  	if (!persistenceCreated("Staff Inputs")){
+	  	let staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Updates"]];
+	  	if (!persistenceCreated(staffGsheet, staffInputsSheet)){
 	  		console.log("Staff Inputs is being created");
 	  	} else{
 	  		console.log("Staff Inputs has been created")
 	  	}
 
-	  	//Adding data to the worksheet!
-	  	if (!persistenceCreated("Credentials")){
+	  	let credentialsSheet = ["Credentials", ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"]];
+	  	if (!persistenceCreated(staffGsheet, credentialsSheet)){
 	  		console.log("Credentials is being created");
 	  		
 	  		setTimeout(function(){
 	  			setupStaffSheet(staffURL, data);
 	  		}, 3000);
 	  	} else{
+		  	//Adding data to the worksheet!
 	  		console.log("Credentials has been created");
 
 			let keyVals = {"Workspace Name": data.workspace, "Staff Email": data.email, "Staff Password": data.password,
@@ -811,7 +805,7 @@ function getPartnerColumns(){
 		console.log(partnerColumns);
 	  });
 	});
-} getPartnerColumns();
+} //getPartnerColumns();
 
 
 
@@ -857,56 +851,7 @@ function updatePartnerSheets(){
 	  });
 	});
 
-} updatePartnerSheets();
-
-
-
-function updateStaffSheets(){
-
-	// Authenticate with the Google Spreadsheets API.
-	staffSheet.useServiceAccountAuth(creds, function (err) {
-
-	  // Get all of the rows from the spreadsheet.
-	  staffSheet.getInfo(function (err, data) {
-
-	  	function persistenceCreated(wsName){
-	  		let headersArray;
-	  		if (wsName == "Staff Values"){
-	  			headersArray = ["Selected Spreadsheet Columns", "Updates"];
-	  		}
-
-	  		if(wsName == "References"){
-	  			headersArray == ["URL", "Purpose", "Workspace Name"]
-	  		}
-
-	  		for(const ws of data.worksheets){
-	  			if(ws.title == wsName){
-	  				return true;
-	  			}
-	  		}
-	  		//need to check if adding rows will automatically expand the spreadsheet, or if the amount of space needs to be specified first
-	  		staffSheet.addWorksheet({title: wsName, headers: headersArray}, function(err){
-	  			//fill in code to put 
-
-	  		});
-	  		return false;
-	  	}
-
-	  	if (persistenceCreated("Staff Values")){
-	  		console.log("Should be entered now that it's created");
-	  		//fill in code to replace values
-	  	}
-
-	  	if (persistenceCreated("References")){
-	  		console.log("Should be entered now that it's created");
-	  		//fill in code to replace values
-	  	}
-
-	  	console.log("262 " + data.worksheets[0].title);
-
-	  });
-	});
-} updateStaffSheets();
+} //updatePartnerSheets();
 
 
 

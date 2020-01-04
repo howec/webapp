@@ -88,7 +88,7 @@ class CreateStep1 extends Component {
     event.preventDefault();
     this.createWorkspaceHandler();
     
-    if(this.state.staffOK == true){
+    if(this.state.staffOK === true){
       console.log("The sheet has been shared!");
     } else{
       console.log("The sheet hasn't been shared");
@@ -97,7 +97,7 @@ class CreateStep1 extends Component {
 
 
   render() {
-    if(this.props.step == "Step1"){
+    if(this.props.step === "Step1"){
       return(
 
          <div className="center-me">

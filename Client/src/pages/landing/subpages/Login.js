@@ -116,7 +116,7 @@ class Login extends Component {
                   <Row horizontal = 'center'>
                     <GoogleLogin
                       clientId="273539098251-5nhctai82l0ram9s38gkp7s22ahc4lui.apps.googleusercontent.com"
-                      buttonText="Login with Google"
+                      buttonText="TEMP: Login with Google"
                       onSuccess={this.responseGoogleSucceed}
                       onFailure={this.responseGoogleFail}
                       cookiePolicy={'single_host_origin'}
