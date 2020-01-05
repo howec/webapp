@@ -48,9 +48,8 @@ class Landing extends Component {
 
             <div>
               <Login
-                setData = {this.props.setData}
-                setGroupApp = {this.props.setGroupApp}
                 page = {this.state.page}
+                onLogIn = {this.props.onLogIn}
                 onSignIn = {this.props.onSignIn}/>
               </div>
           </div>

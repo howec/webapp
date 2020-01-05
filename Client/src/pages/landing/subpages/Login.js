@@ -36,20 +36,18 @@ class Login extends Component {
     let email = document.getElementById('formEmail').value;
     let password = document.getElementById('formPassword').value;
     socket.emit("loginSubmitted", {workspace: this.state.workspace, group: this.state.group, email: email, password: password});
-  
-
-
-
-
 
     socket.on('loginValidation', (arg) => {
       if(arg.valid == true){
-        this.props.setGroupApp(this.state.group);
-        this.props.setData(arg.data);
+
+        //HOWE replace null values
+        this.props.onLogIn(this.state.group, null, null);
       } else{
-        this.setState({valid: false});
+        console.log("Login validation failed");
       }
     });
+
+
   }
 
   sendWorkspace = (event) =>{

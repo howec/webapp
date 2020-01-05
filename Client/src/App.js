@@ -17,32 +17,35 @@ class App extends Component{
     /* 
     group values: null, Students, Staff, Partners
     */
-    this.state = {url: null, loggedIn: false, group: null, profile: null, data: null};
+    this.state = {logsign: null, url: null, loggedIn: false, group: null, profile: null, data: null};
 
     socket.emit('FINALLY', {msg: "event from App.js"});
   }
-
-
-  staffSignIn = () =>{
-
-  }
-
-  partnerSignIn = () => {
-
-  }
-
 
   setData = (d) =>{
     this.setState({data: d});
   }
 
+  //To delete
   setGroupApp = (g) =>{
     this.setState({group: g});
   }
 
+  onLogIn = (group, urlList, data) => {
+    //urlList and data currently not set
+    let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
+    this.setState({logsign: "Normal"});
+    this.setState({url: urlStuff}); // HOWE
+    this.setState({loggedIn: true});
+    this.setState({group: group});
+
+
+    this.setState({data: data});//HOWE
+  }
 
   onSignIn = (googleUser) => {
     //should I be configuring a "group?"
+    this.setState({logsign: "Google"});
 
 
     //!!!!!TODO: need to make a function to get the url stuff, input from staff
@@ -86,9 +89,9 @@ class App extends Component{
   }
 
 
-  onSignOut = () => {
+  gSignOut = () => {
     console.log("INSIDE THE SIGNOUT FUNCTION");
-    this.setState({loggedIn: false, group: null, url: null});
+    this.setState({logsign: null, loggedIn: false, group: null, url: null});
 
     var auth2 = window.gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
@@ -97,6 +100,23 @@ class App extends Component{
 
     socket.emit('loggedout', {});
   }
+
+  nLogOut = () => {
+    console.log("INSIDE THE SIGNOUT FUNCTION");
+    this.setState({logsign: null, loggedIn: false, group: null, url: null});
+
+    socket.emit('loggedout', {});
+  }
+
+  onSignOut = () =>{
+    if(this.state.logsign == "Normal"){
+      return this.nLogOut();
+    } else{
+      return this.gSignOut;
+    }
+  }
+
+
 
 
 /*
@@ -107,11 +127,10 @@ class App extends Component{
     return (
       <div>
         <LoginLanding
-          setData = {this.setData}
-          setGroupApp = {this.setGroupApp}
           url = {["Applica", ""]}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}
+          onLogIn = {this.onLogIn}
           onSignIn = {this.onSignIn}
           onSignOut = {this.onSignOut} />
         <StaffLanding
