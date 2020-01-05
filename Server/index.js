@@ -6,6 +6,15 @@ Terminology:
 	Worksheets will be explicitly labeled as a Wsheet. Unless stated otherwise, all sheets are a Gsheet.
 	Todo: relabel all sheets as Gsheets; convention going forward is to name a sheet as a Gsheet.
 
+	Operating assumption: googlesheets may NOT be modified after being linked to the server. The server
+		does all modifications and records it. This is to protect the authenticity of the data and safeguards
+		the server from crashing.
+	Recommendation if you want to modify the sheet after having published it:
+		Create a COPY of the sheet you want to use
+		Staff may use the ADD_APPROVED_ROWS** function (yet to be implemented) to add rows to EITHER the Partner sheet, or the Student sheet
+			This allows the SERVER to know if it has added the data or not, and will store this time in memory
+			for use in authentication
+
 TODO:
 	Must add password hashing to both frontend/backend
 	On the topic of security, may want to consider hmacs, encryption, etc.
@@ -16,12 +25,16 @@ TODO:
 		exceptions. --> TESTED: will be fine. No null exceptions occur if the server attempts to add a row into
 		a non-existent wsheet. HOWEVER, must still be careful of getter methods when the clients request data
 		upon login.
+	Security solution: For all sheet modifications, the last modified time MUST be recorded for security purposes.
+		If a person obtained access to workspace sheets and has maliciously modified the column/row values, the next
+		calls for this workspace will VERY LIKELY break the server if there is no check on last modified time
+		made by the server to guarantee the data's integrity. In the case that the data has been tampered with,
+		the server needs to refuse client calls out of self-preservation.
 
 */
 
 //setup
 const fs = require('fs');
-
 
 
 const GoogleSpreadsheet = require('google-spreadsheet');
@@ -50,6 +63,7 @@ server.listen(PORT, () => console.log('Server has started on port ' + PORT));
 Global variables ----------------------------------------------
 */
 const activeUsers = {};
+const loggedUsers = {};
 const unfinishedWorkspaces = {};
 const unfinishedURLs = {};
 
@@ -57,6 +71,7 @@ const unfinishedURLs = {};
 
 const staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Updates", "Rejected Partners", "Rejected Students", "Starred Students"]];
 const staffCredentialsSheet = ["Credentials", ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"]];
+const staffOptionalConfigsSheet = ["Staff Optional Configs", ["Org Name", "Org Link"]]; //NOT IN USE SO FAR
 const studentInputsSheet = ["Student Inputs", ["Confirmation if Accepted"]];
 const partnerInputsSheet = ["Partner Inputs", ["Project", "Lead", "Email", "Hash Identifier", "Hashed Password", "Application Reviews"]];
 
@@ -73,7 +88,7 @@ try{
 }catch(error){
 	console.log(error);
 	workspaceDictionary = {};
-	writeWorkspaceData(workspaceDictionary);
+	writeWorkspaceData();
 }
 
 /*
@@ -87,15 +102,15 @@ try{
 }catch(error){
 	console.log(error);
 	urlDictionary = {};
-	writeURLData(urlDictionary);
+	writeURLData();
 }
 
 
 /*
 Function to write the workspaceDictionary into memory, replacing it if it already exists.
 */
-function writeWorkspaceData(dict){
-		fs.writeFile("./data/workspaceDictionary.json", JSON.stringify(dict, null, 4), (err) => {
+function writeWorkspaceData(){
+		fs.writeFile("./data/workspaceDictionary.json", JSON.stringify(workspaceDictionary, null, 4), (err) => {
 		    if (err) {
 		        console.error(err);
 		        return;
@@ -103,13 +118,14 @@ function writeWorkspaceData(dict){
 		    console.log("File has been created");
 		});
 	}
+
 
 
 /*
 Function to write the urlDictionary into memory, replacing it if it already exists.
 */
-function writeURLData(dict){
-		fs.writeFile("./data/urlDictionary.json", JSON.stringify(dict, null, 4), (err) => {
+function writeURLData(){
+		fs.writeFile("./data/urlDictionary.json", JSON.stringify(urlDictionary, null, 4), (err) => {
 		    if (err) {
 		        console.error(err);
 		        return;
@@ -119,8 +135,10 @@ function writeURLData(dict){
 	}
 
 
-
-
+function updateURLData(url, timestamp){
+	urlDictionary[url] = timestamp;
+	writeURLData();
+}
 
 /*
 Sockets events ----------------------------------------------
@@ -152,24 +170,32 @@ io.on('connection', function(socket){
 		//removes any unfinished workspaces upon disconnect
 		delete unfinishedWorkspaces[name];
 		delete activeUsers[socket.id];
+		delete loggedUsers[socket.id];
 		console.log('a user disconnected:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
 
 	//-------- NavigationBar.js --------
 
 	socket.on('loggedout', function(){
-		delete activeUsers[socket.id];
+		delete loggedUsers[socket.id];
+
 		console.log('a user logged out:' + socket.id + "... now length of activeUsers is: " + Object.keys(activeUsers).length);
 	});
 
 	//-------- Login.js --------
 
-	//not sure where this actually is
+	//CURR
+	//if made it to loginSubmitted, then we know that the workspace was correct, and we now have group info
+	//not a problem if someone tries to spoof email and workspace -- without password they can't access info
 	socket.on("loginSubmitted", function(data){
 		console.log("Form has been submitted. workspace:" + data.workspace);
 		console.log("Form has been submitted. group:" + data.group);
 		console.log("Form has been submitted. email: " + data.email);
 		console.log("Form has been submitted. password: " + data.password);
+
+		//should be encapsulated in a login check first:
+		loggedUsers[socket.id] = data.email;
+		delete activeUsers[socket.id];
 
 		//on successful login, submit all the information over
 		//information (NavigationBar): url & name from staff... if needed
@@ -180,7 +206,54 @@ io.on('connection', function(socket){
 		//status update for the person, taking parameter (group and email)
 			//email is used to look at the applicant's response, NOT fields.
 			//
-		socket.emit("loginValidation", {valid: false});
+
+		let staffURL = workspaceDictionary[data.workspace];
+		let gsheet = new GoogleSpreadsheet(staffURL);
+
+		//if group == staff
+		//NOTE: gsheet accessed and modified
+		gsheet.useServiceAccountAuth(creds, function (err) {
+			gsheet.getInfo(function(err){
+
+			let sheetIndex = getWsheetIndex(gsheet, staffCredentialsSheet[0]);
+
+			if(sheetIndex !== null){
+			 	gsheet.getRows(sheetIndex, function (err, rows){
+					  	console.log("Inside loginSubmitted");
+					  	console.log(rows[0]);
+
+					  	let columns = {};
+
+					  	var count = 0;
+					    for (const key in rows[0]){
+					    	columns[count] = key;
+					    	count = count + 1;
+					    }
+
+					    //partnerColumns now has a value
+						console.log("I've been called... columns");
+						console.log(rows[0][columns[2]]);
+						console.log(columns);
+
+
+						if(false){
+							socket.emit("loginValidation", {valid: true});
+						}else{
+							socket.emit("loginValidation", {valid: false});
+						}
+
+
+					});
+				} else{
+					socket.emit("loginValidation", {valid: false});
+				}
+			});
+		});
+
+
+
+
+
 
 	});
 
@@ -188,11 +261,14 @@ io.on('connection', function(socket){
 	//HOWE PROBABLY CAN DELETE?
 	//will need to revise so as that email isn't the only thing that we're checking on
 	//this will probably need to be the authentication token
-	socket.on("loggedin", function(data){
+	socket.on("gLoginSubmitted", function(data){
 		//function needed to check the workspace name
 		//function needed to check if person exists in the workspace name for said group
 
-		activeUsers[socket.id] = data.email;
+		loggedUsers[socket.id] = data.email;
+		delete activeUsers[socket.id];
+
+
 		//function needed to get the email corresponding to the authentication token
 		console.log('Connection has been STORED! USING SOCKET.ID: ' + socket.id);
 		console.log("length of activeUsers is: " + Object.keys(activeUsers).length);
@@ -210,9 +286,10 @@ io.on('connection', function(socket){
 		console.log(data.msg + " SocketID is: " + socket.id);
 	});
 
+
+
 	socket.on('workspaceSubmitted', function(data){
-		//HOWE to change!!!
-		if(data.workspace == "NAME"){
+		if(workspaceDictionary[data.workspace]){
 			socket.emit("workspaceValidation", {valid: true});
 			console.log("Entered workspaceSubmitted");
 		}else{
@@ -244,14 +321,13 @@ io.on('connection', function(socket){
 		let staffOK = null;
 
 
-		if(checkWorkspaceAvailability(name,socket)){
+		if(checkWorkspaceAvailability(name, socket)){
 			socket.emit("workspaceStatus", {ok: true, msg: "The workspace name is available!"});
 			workspaceOK = true;
 		}else{
 			socket.emit("workspaceStatus", {ok: false, msg: "This workspace name cannot be used."});
 			workspaceOK = false;
 		}
-
 
 		//should have put urlStaff into unfinishedURLs
 		staffOK = urlConditions("urlStatus", urlStaff, sharing, socket);
@@ -341,6 +417,7 @@ io.on('connection', function(socket){
 
 
     	if(password===password2){
+    		//HOWE
         	//check if passwords contain no special characters
 	        if(true){
 	        	socket.emit("createStep3_p1", {email: email, password: password, password2: password2});
@@ -358,7 +435,7 @@ io.on('connection', function(socket){
 
 	    if(emailOK && passwordOK){
 	    	socket.emit("confirmation", {msg: "Email and passwords are good! You're ready to go!"});
-	    	//function stuff to transfer the data in the unfinished dictionaries (workspacename + url)
+	    	//function stuff to transfer the data in the unfinished dictionaries
 	    	//into the actual dictionaries workspaceDictionary, urlDictionary
 		
 
@@ -371,8 +448,13 @@ io.on('connection', function(socket){
 			//should create the persistence layers (Credentials, Staff Inputs) in staffURL
 			console.log("Entering setupStaffSheet... about to apply credentials");
 
+
 			let staffData = {"Workspace Name": name, "Staff Email": email, "Staff Password": password,
 								"Student Sheet URL": studentURL, "Partner Sheet URL": partnerURL};
+			
+			//HOWE
+			//when these sheets are setup, their url must be recorded, as I do below.
+			//urlDictionary[urls] below should be removed after
 			setupStaffSheet(staffURL, staffData);
 			setupStudentSheet(studentURL);
 			setupPartnerSheet(partnerURL);
@@ -380,12 +462,15 @@ io.on('connection', function(socket){
 
 
 			workspaceDictionary[name] = staffURL;
-			writeWorkspaceData(workspaceDictionary);
+			writeWorkspaceData();
 
+
+			//HOWE: must change these values to last edited for security purposes
+			//updateURLData function calls should be made here instead
 			urlDictionary[staffURL] = name;
 			urlDictionary[studentURL] = name;
 			urlDictionary[partnerURL] = name;
-			writeURLData(urlDictionary);
+			writeURLData();
 
 	
 			//removes unfinished urls after transferring them to urlDictionary
@@ -448,6 +533,7 @@ function unusedURL(url, sid){
 
 
 //Called for socket emissions in CreateStep1.js
+//Only accesses gsheet
 function checkSheetSharing(event, url, socket){
 	let gsheet = new GoogleSpreadsheet(url);
 	console.log("In checkSheetSharing");
@@ -515,7 +601,9 @@ function urlConditions(event, url, sharing, socket){
 	return urlOK;
 }
 
-
+//HOWE: May want to make this recreate a sheet instead if the sheet has already been found.... just in case for
+//sloppy reconfigs of the workspace so we don't break anything
+//A lot of edge cases to think about
 //to generalize function for extendability to other persistences in partner/student
 function persistenceCreated(gSheet, addSheetsList){
 	//addSheetsList will be structured as: [wsName, [headers for wsName]];
@@ -538,7 +626,8 @@ function persistenceCreated(gSheet, addSheetsList){
 	return false;
 }
 
-
+//see if sheets will setup without timeout
+//NOTE: accesses and modifies sheet, must record new timestamp in urlDictionary
 // setupStaffSheet(staffURL, {email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
 function setupStaffSheet(staffURL, data){
 	let staffGsheet = new GoogleSpreadsheet(staffURL);
@@ -567,13 +656,15 @@ function setupStaffSheet(staffURL, data){
 		  	//Adding data to the worksheet!
 	  		console.log("Credentials has been created");;
 	  		
-	  		getWsheet(staffGsheet, "Credentials", applyCredentials(data));
+	  		getWsheetAndApply(staffGsheet, "Credentials", applyCredentials(data));
 	  	}
 
 	  });
 	});
 }
 
+//see if sheets will setup without timeout
+//NOTE: accesses and modifies sheet, must record new timestamp in urlDictionary
 //data not configured in this stage
 function setupStudentSheet(studentURL, data){
 	let studentGsheet = new GoogleSpreadsheet(studentURL);
@@ -595,6 +686,8 @@ function setupStudentSheet(studentURL, data){
 	});
 }
 
+//see if sheets will setup without timeout
+//NOTE: accesses and modifies sheet, must record new timestamp in urlDictionary
 //data not configured in this stage
 function setupPartnerSheet(partnerURL, data){
 	let partnerGsheet = new GoogleSpreadsheet(partnerURL);
@@ -624,8 +717,8 @@ function populatePartnerSheet(partnerURL, data){
 
 
 //function that retrieves the desired wSheet from the gsheet for you to apply a function on.
-function getWsheet(gsheet, wsheetName, funcToApply){
-	gsheet.getInfo(callback = () =>{
+function getWsheetAndApply(gsheet, wsheetName, funcToApply){
+	gsheet.getInfo(function(err){
 		/*
 			id - the URL/id as returned from google
 			title - the title of the document
@@ -659,34 +752,41 @@ function applyCredentials(data){
 	addRowToSheet = (wsheet) =>{
   		//need to check if adding rows will automatically expand the spreadsheet, or if the amount of space needs to be specified first
 		wsheet.addRow(keyVals, function(err){});
+
+		//need to include 
 	}
 
 	return addRowToSheet;
 }
 
-//maybe not needed?
+//must always call this inside of a .getInfo() call
 function getWsheetIndex(gsheet, wsheetName){
-	let count = 0;
 
-	for(const wsheet of gsheet.worksheets){
-		console.log("inside for loop");
-		console.log(wsheet);
+		let count = 0;
 
-		count = count + 1;
-		if(wsheet.title == wsheetName){
-			return count;
+		for(const wsheet of gsheet.worksheets){
+			count = count + 1;
+			if(wsheet.title == wsheetName){
+				return count;
+			}
 		}
-	}
-	return null;
+		return null;
 }
 
+
+
+//End of socket helper functions ----------------------------------------------
+//Beginning of maybe useful legacy code
+
+
 //for use in the actual staff page
+//only accesses gsheet, legacy code
 function getColumns(gsheet, wsheet, somefunc){
 	let temp = {}
 
 	// Authenticate with the Google Spreadsheets API.
 	gsheet.useServiceAccountAuth(creds, function (err) {
-		gsheet.getInfo(callback = () =>{
+		gsheet.getInfo(function(err){
 
 			/*
 				id - the URL/id as returned from google
@@ -722,8 +822,7 @@ function getColumns(gsheet, wsheet, somefunc){
 
 
 
-//End of socket helper functions ----------------------------------------------
-//Beginning of maybe useful legacy code
+
 
 // let partner = '1X2udtqxCNpha3V0GV26Gmz0mADe_W6lfZW_z4YzOTcI';
 let partner = '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg';

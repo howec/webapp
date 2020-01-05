@@ -70,8 +70,9 @@ class App extends Component{
 
     console.log("Entered console.... "  + this.state.loggedIn);
 
+    //HOWE: this should actually be the authentication stuff
     //login emission here... this is BEFORE any authentication
-    socket.emit("loggedin", {email: this.state.profile.getEmail()});
+    socket.emit("gLoginSubmitted", {email: this.state.profile.getEmail()});
 
     socket.on("sendingattempt", (data) =>{
       console.log("IN SENDING ATTEMPT");

@@ -37,6 +37,11 @@ class Login extends Component {
     let password = document.getElementById('formPassword').value;
     socket.emit("loginSubmitted", {workspace: this.state.workspace, group: this.state.group, email: email, password: password});
   
+
+
+
+
+
     socket.on('loginValidation', (arg) => {
       if(arg.valid == true){
         this.props.setGroupApp(this.state.group);
@@ -70,11 +75,12 @@ class Login extends Component {
     return (<p><i><font color="#CD5C5C">That workspace doesn't exist!</font></i></p>);
   }
 
+//fails on incorrect login info OR credentials sheet was not found
   loginError = () => {
     if(this.state.valid != false){
       return null;
     }
-    return (<p><i><font color="#CD5C5C">Incorrect login credentials!</font></i></p>);
+    return (<p><i><font color="#CD5C5C">Login failed!</font></i></p>);
   }
 
   setGroupStaff = () => {
