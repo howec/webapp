@@ -28,9 +28,11 @@ class CreateStep1 extends Component {
       console.log("entered sheetShared");
 
       if(data.shared === true){
+        url = data.url;
         this.setState({staffOK: true})
       } 
       if(data.shared === false){
+        url = data.url;
         this.setState({staffOK: false});
       }
     
@@ -74,7 +76,10 @@ class CreateStep1 extends Component {
 
 
     socket.on("approved", (data)=>{
+      console.log("INSIDE APPROVED");
       console.log(data.msg);
+      console.log("workspace: " + this.state.workspaceOK);
+      console.log("staffOK: " + this.state.staffOK);
       if(this.props.step === "Step1" && this.state.workspaceOK === true && this.state.staffOK === true){
         this.props.toNextStep();
       }

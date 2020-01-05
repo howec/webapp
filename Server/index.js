@@ -348,8 +348,12 @@ io.on('connection', function(socket){
 		}
 
 		//should have put urlStaff into unfinishedURLs
+		console.log()
 		staffOK = urlConditions("urlStatus", urlStaff, sharing, socket);
 
+		console.log("workspaceOK: " + workspaceOK);
+		console.log("staffOK: " + staffOK);
+		console.log(workspaceOK && staffOK);
 
 		if(staffOK && workspaceOK){
 			unfinishedWorkspaces[name] = [socket.id, [urlStaff, "temp student", "temp partner"]];
@@ -485,9 +489,9 @@ io.on('connection', function(socket){
 
 				setTimeout(function(){
 					//timeouts set to 0 here because they're already wrapped into a timeout
-					updateURLTimes(staffURL, 1500);
-					updateURLTimes(studentURL, 1500);
-					updateURLTimes(partnerURL, 1500);
+					updateURLTimes(staffURL, 2500);
+					updateURLTimes(studentURL, 2500);
+					updateURLTimes(partnerURL, 2500);
 
 					workspaceDictionary[name] = staffURL;
 					writeWorkspaceData();
@@ -572,29 +576,31 @@ function parseURL(url){
 //HOWE: Known bug... check fails when gibberish is put in, and then a previously used url is entered
 //this will store ANY url recently submitted into a temporary memory space, which is cleared on disconnect
 function unusedURL(url, sid){
-	if(urlDictionary[url] !== undefined){
+	console.log("inside unusedURL. The URL is: " + url);
+	console.log(urlDictionary[url]);
+	if(urlDictionary[url]){
 		return false;
-	}
-
-	if(unfinishedURLs[url] === undefined){
-		unfinishedURLs[url] = 1; //this is just a filler value
-		return true;
-	}
-
-	let name = activeUsers[sid];
-	let urls;
-
-	//any URL entered on second page cannot equal the staffURL associated with the workspace recently made
-	if(unfinishedWorkspaces[name] !== undefined){
-		urls = unfinishedWorkspaces[name][1];
-		let staffURL = urls[0]
-
-		if(url !== staffURL){
+	} else{
+		if(unfinishedURLs[url] === undefined){
 			unfinishedURLs[url] = 1; //this is just a filler value
 			return true;
-		}//else proceed to return false, because url (which is either student/partner) = staffURL, which is bad
+		}
+
+		let name = activeUsers[sid];
+		let urls;
+
+		//any URL entered on second page cannot equal the staffURL associated with the workspace recently made
+		if(unfinishedWorkspaces[name] !== undefined){
+			urls = unfinishedWorkspaces[name][1];
+			let staffURL = urls[0]
+
+			if(url !== staffURL){
+				unfinishedURLs[url] = 1; //this is just a filler value
+				return true;
+			}//else proceed to return false, because url (which is either student/partner) = staffURL, which is bad
+		}
+		return false;
 	}
-	return false;
 }
 
 
@@ -604,13 +610,14 @@ function unusedURL(url, sid){
 function checkSheetSharing(event, url, socket){
 	let gsheet = new GoogleSpreadsheet(url);
 	console.log("In checkSheetSharing");
+	console.log("URL in checkSheetSharing is: " + url);
 
 	gsheet.useServiceAccountAuth(creds, function (err) {
 	  gsheet.getRows(1, function (err, rows){
 	  	if(rows !== undefined){
-	  		socket.emit(event, {shared: true});
+	  		socket.emit(event, {shared: true, url: url});
 	  	} else{
-	  		socket.emit(event, {shared: false});
+	  		socket.emit(event, {shared: false, url: url});
 	  	}
 
 	  });
@@ -685,17 +692,21 @@ function urlConditions(event, url, sharing, socket){
 				//Has not officially been stored into memory yet. Sheet sharing privileges must first be verified
 				socket.emit(event, {ok: true, msg: "URL looks good!"});
 				urlOK = true;
+				console.log("URL looks good!");
 			} else{
 				socket.emit(event, {ok: false, msg: "URL has not been shared privileges."})
 				urlOK = false;
+				console.log("URL has not been shared privileges.")
 			}
 		} else{
 			socket.emit(event, {ok: false, msg: "URL has already been used."})
 			urlOK = false;
+			console.log("URL has already been used.")
 		}
 	} else{
 		socket.emit(event, {ok: false, msg: "URL is invalid! Make sure it's a valid link or properly formatted."});
 		urlOK = false;
+		console.log("URL is invalid! Make sure it's a valid link or properly formatted.");
 	}
 	return urlOK;
 }

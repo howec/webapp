@@ -28,9 +28,11 @@ class CreateStep2 extends Component {
     socket.on("partnerShared", (data)=>{
       console.log("entered partnerShared");
       if(data.shared === true){
+        urlPartner = data.url;
         this.setState({partnerOK: true})
       } 
       if(data.shared === false){
+        urlPartner = data.url;
         this.setState({partnerOK: false});
       }
 
@@ -43,9 +45,11 @@ class CreateStep2 extends Component {
     socket.on("studentShared", (data)=>{
       console.log("entered studentShared");
       if(data.shared === true){
+        urlStudent = data.url;
         this.setState({studentOK: true})
       } 
       if(data.shared === false){
+        urlStudent = data.url;
         this.setState({studentOK: false});
       }
 
