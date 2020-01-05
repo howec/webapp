@@ -53,6 +53,15 @@ const activeUsers = {};
 const unfinishedWorkspaces = {};
 const unfinishedURLs = {};
 
+
+
+const staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Updates", "Rejected Partners", "Rejected Students", "Starred Students"]];
+const staffCredentialsSheet = ["Credentials", ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"]];
+const studentInputsSheet = ["Student Inputs", ["Confirmation if Accepted"]];
+const partnerInputsSheet = ["Partner Inputs", ["Project", "Lead", "Email", "Hash Identifier", "Hashed Password", "Application Reviews"]];
+
+
+
 /*
 Load the workspaceDictionary into memory upon WebApp initialization.
 If no workspaceDictionary is found, then create an empty dictionary and store it in memory.
@@ -361,8 +370,14 @@ io.on('connection', function(socket){
 			let partnerURL = urls[2];
 			//should create the persistence layers (Credentials, Staff Inputs) in staffURL
 			console.log("Entering setupStaffSheet... about to apply credentials");
-			setupStaffSheet(staffURL, {workspace: name, email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
+
+			let staffData = {"Workspace Name": name, "Staff Email": email, "Staff Password": password,
+								"Student Sheet URL": studentURL, "Partner Sheet URL": partnerURL};
+			setupStaffSheet(staffURL, staffData);
+			setupStudentSheet(studentURL);
+			setupPartnerSheet(partnerURL);
 			//access Credentials
+
 
 			workspaceDictionary[name] = staffURL;
 			writeWorkspaceData(workspaceDictionary);
@@ -403,6 +418,7 @@ function parseURL(url){
 	return url;
 }
 
+//HOWE: Known bug... check fails when gibberish is put in, and then a previously used url is entered
 //this will store ANY url recently submitted into a temporary memory space, which is cleared on disconnect
 function unusedURL(url, sid){
 	if(urlDictionary[url] !== undefined){
@@ -534,33 +550,78 @@ function setupStaffSheet(staffURL, data){
 	  staffGsheet.getInfo(function (err) {
 	  	console.log("Inside setupStaffSheet");
 
-	  	let staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Updates"]];
 	  	if (!persistenceCreated(staffGsheet, staffInputsSheet)){
 	  		console.log("Staff Inputs is being created");
 	  	} else{
 	  		console.log("Staff Inputs has been created")
 	  	}
 
-	  	let credentialsSheet = ["Credentials", ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"]];
-	  	if (!persistenceCreated(staffGsheet, credentialsSheet)){
+	  	if (!persistenceCreated(staffGsheet, staffCredentialsSheet)){
 	  		console.log("Credentials is being created");
-	  		
+
+	  		//more efficient means of ensuring that the server isn't being spammed
 	  		setTimeout(function(){
 	  			setupStaffSheet(staffURL, data);
 	  		}, 3000);
 	  	} else{
 		  	//Adding data to the worksheet!
-	  		console.log("Credentials has been created");
-
-			let keyVals = {"Workspace Name": data.workspace, "Staff Email": data.email, "Staff Password": data.password,
-			"Student Sheet URL": data.studentURL, "Partner Sheet URL": data.partnerURL};
+	  		console.log("Credentials has been created");;
 	  		
-	  		getWsheet(staffGsheet, "Credentials", applyCredentials(keyVals));
+	  		getWsheet(staffGsheet, "Credentials", applyCredentials(data));
 	  	}
 
 	  });
 	});
 }
+
+//data not configured in this stage
+function setupStudentSheet(studentURL, data){
+	let studentGsheet = new GoogleSpreadsheet(studentURL);
+
+	// Authenticate with the Google Spreadsheets API.
+	studentGsheet.useServiceAccountAuth(creds, function (err) {
+
+	  // Get all of the rows from the spreadsheet.
+	  studentGsheet.getInfo(function (err) {
+	  	console.log("Inside setupStudentSheet");
+
+	  	if (!persistenceCreated(studentGsheet, studentInputsSheet)){
+	  		console.log("Student Inputs is being created");
+	  	} else{
+	  		console.log("Student Inputs has been created")
+	  	}
+
+	  });
+	});
+}
+
+//data not configured in this stage
+function setupPartnerSheet(partnerURL, data){
+	let partnerGsheet = new GoogleSpreadsheet(partnerURL);
+
+	// Authenticate with the Google Spreadsheets API.
+	partnerGsheet.useServiceAccountAuth(creds, function (err) {
+
+	  // Get all of the rows from the spreadsheet.
+	  partnerGsheet.getInfo(function (err) {
+	  	console.log("Inside setupStaffSheet");
+
+	  	//hashed identifier for the visualizations... created out of hashing the partner's email with their password + three URLs
+	  	if (!persistenceCreated(partnerGsheet, partnerInputsSheet)){
+	  		console.log("Partner Inputs is being created");
+	  	} else{
+	  		console.log("Partner Inputs has been created")
+	  	}
+
+	  });
+	});
+}
+
+function populatePartnerSheet(partnerURL, data){
+//if persistenceCreated, AND has headers
+}
+
+
 
 //function that retrieves the desired wSheet from the gsheet for you to apply a function on.
 function getWsheet(gsheet, wsheetName, funcToApply){
@@ -587,9 +648,8 @@ function getWsheet(gsheet, wsheetName, funcToApply){
 			}
 		}
 	});
-
 }
-// getWsheet(new GoogleSpreadsheet("18ugcQrxTlo2I3MzTrfMLPLI4HYAVNRnwFaF54KI7jZA"), "References", {});
+
 
 //must return a functin
 function applyCredentials(data){
