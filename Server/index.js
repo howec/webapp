@@ -452,13 +452,19 @@ io.on('connection', function(socket){
 			let staffData = {"Workspace Name": name, "Staff Email": email, "Staff Password": password,
 								"Student Sheet URL": studentURL, "Partner Sheet URL": partnerURL};
 			
-			//HOWE
-			//when these sheets are setup, their url must be recorded, as I do below.
-			//urlDictionary[urls] below should be removed after
-			setupStaffSheet(staffURL, staffData);
-			setupStudentSheet(studentURL);
-			setupPartnerSheet(partnerURL);
-			//access Credentials
+			//Delete any existing sheets with important names...
+			deleteSheetsForInitialization(staffURL);
+			deleteSheetsForInitialization(studentURL);
+			deleteSheetsForInitialization(partnerURL);
+
+			setTimeout(function(){
+				//HOWE
+				//when these sheets are setup, their url must be recorded, as I do below.
+				//urlDictionary[urls] below should be removed after
+				setupStaffSheet(staffURL, staffData);
+				setupStudentSheet(studentURL);
+				setupPartnerSheet(partnerURL);
+			}, 3000);
 
 
 			workspaceDictionary[name] = staffURL;
@@ -534,7 +540,7 @@ function unusedURL(url, sid){
 
 
 //Called for socket emissions in CreateStep1.js
-//Only accesses gsheet
+//Checks gsheet for sharing privileges... FURTHERMORE deletes any existing sheets
 function checkSheetSharing(event, url, socket){
 	let gsheet = new GoogleSpreadsheet(url);
 	console.log("In checkSheetSharing");
@@ -548,29 +554,38 @@ function checkSheetSharing(event, url, socket){
 	  	}
 
 	  });
-	
-	console.log("inside checkSheetSharing, about to delete any existing wsheets if found");
-	gsheet.getInfo(function (err) {
-		for(const ws of gsheet.worksheets){
-
-			if(ws.title === staffInputsSheet[0]){
-				ws.del();
-			}
-			if(ws.title === staffCredentialsSheet[0]){
-				ws.del();
-			}
-			if(ws.title === staffOptionalConfigsSheet[0]){
-				ws.del();
-			}
-			if(ws.title === studentInputsSheet[0]){
-				ws.del();
-			}
-			if(ws.title === partnerInputsSheet[0]){
-				ws.del();
-			}
-		}
+		
 	});
+}
+
+
+function deleteSheetsForInitialization(url){
+	console.log("inside checkSheetSharing, about to delete any existing wsheets if found");
 	
+	let gsheet = new GoogleSpreadsheet(url);
+
+	gsheet.useServiceAccountAuth(creds, function (err) {
+		gsheet.getInfo(function (err) {
+
+			for(const ws of gsheet.worksheets){
+				if(ws.title === staffInputsSheet[0]){
+					ws.del();
+				}
+				if(ws.title === staffCredentialsSheet[0]){
+					ws.del();
+				}
+				if(ws.title === staffOptionalConfigsSheet[0]){
+					ws.del();
+				}
+				if(ws.title === studentInputsSheet[0]){
+					ws.del();
+				}
+				if(ws.title === partnerInputsSheet[0]){
+					ws.del();
+				}
+			}
+
+		});
 	});
 }
 
