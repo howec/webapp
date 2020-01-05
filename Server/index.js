@@ -70,10 +70,10 @@ const unfinishedURLs = {};
 
 
 const staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Updates", "Rejected Partners", "Rejected Students", "Starred Students"]];
-const staffCredentialsSheet = ["Credentials", ["Workspace Name", "Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL"]];
+const staffCredentialsSheet = ["Credentials", ["Staff Email", "Staff Password", "Student Sheet URL", "Partner Sheet URL", "Workspace Name"]];
 const staffOptionalConfigsSheet = ["Staff Optional Configs", ["Org Name", "Org Link"]]; //NOT IN USE SO FAR
-const studentInputsSheet = ["Student Inputs", ["Confirmation if Accepted"]];
-const partnerInputsSheet = ["Partner Inputs", ["Project", "Lead", "Email", "Hash Identifier", "Hashed Password", "Application Reviews"]];
+const studentInputsSheet = ["Student Inputs", ["Student Email", "Confirmation if Accepted"]];
+const partnerInputsSheet = ["Partner Inputs", ["Partner Email", "Project", "Lead", "Hash Identifier", "Hashed Password", "Application Reviews"]];
 
 
 
@@ -466,15 +466,13 @@ io.on('connection', function(socket){
 				setupPartnerSheet(partnerURL);
 
 				setTimeout(function(){
-					updateTimes(staffURL);
-					updateTimes(studentURL);
-					updateTimes(partnerURL);
+					//timeouts set to 0 here because they're already wrapped into a timeout
+					updateURLTimes(staffURL, 0);
+					updateURLTimes(studentURL, 0);
+					updateURLTimes(partnerURL, 0);
 
-					setTimeout(function(){
-						workspaceDictionary[name] = staffURL;
-						writeWorkspaceData();
-						writeURLData();
-					}, 800);
+					workspaceDictionary[name] = staffURL;
+					writeWorkspaceData();
 				}, 600);
 			}, 600);
 
@@ -504,16 +502,38 @@ io.on('connection', function(socket){
 
 
 //Start of socket helper functions ----------------------------------------------
-function updateTimes(url){
+
+//MUST call this whenever a method mutates a googlesheet
+//set timeout=0 if you want .getInfo() immediately
+function updateURLTimes(url, timeout){
+	let gsheet = new GoogleSpreadsheet(url);
+
+	gsheet.useServiceAccountAuth(creds, function (err) {
+		setTimeout(function(){
+			gsheet.getInfo(function(err){
+				urlDictionary[url] = gsheet.info.updated;
+				writeURLData();
+			});
+		}, timeout);
+	});
+};
+
+//function to compareURLTimes of any sheet you are trying to access
+//if the times do not match, abort accessing the sheet to prevent the server from crashing
+//the times matching are our only guarantee of the data's integrity
+function compareURLTimes(url){
 	let gsheet = new GoogleSpreadsheet(url);
 
 	gsheet.useServiceAccountAuth(creds, function (err) {
 		gsheet.getInfo(function(err){
-			urlDictionary[url] = gsheet.info.updated;
+			if(urlDictionary[url] === gsheet.info.updated){
+				return true;
+			}
+			return false;
 		});
 	});
+}
 
-};
 
 
 //HOWE
