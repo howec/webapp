@@ -464,19 +464,27 @@ io.on('connection', function(socket){
 				setupStaffSheet(staffURL, staffData);
 				setupStudentSheet(studentURL);
 				setupPartnerSheet(partnerURL);
-			}, 3000);
+
+				setTimeout(function(){
+					updateTimes(staffURL);
+					updateTimes(studentURL);
+					updateTimes(partnerURL);
+
+					setTimeout(function(){
+						workspaceDictionary[name] = staffURL;
+						writeWorkspaceData();
+						writeURLData();
+					}, 800);
+				}, 600);
+			}, 600);
 
 
-			workspaceDictionary[name] = staffURL;
-			writeWorkspaceData();
-
-
-			//HOWE: must change these values to last edited for security purposes
-			//updateURLData function calls should be made here instead
-			urlDictionary[staffURL] = name;
-			urlDictionary[studentURL] = name;
-			urlDictionary[partnerURL] = name;
-			writeURLData();
+			// //HOWE: must change these values to last edited for security purposes
+			// //updateURLData function calls should be made here instead
+			// urlDictionary[staffURL] = name;
+			// urlDictionary[studentURL] = name;
+			// urlDictionary[partnerURL] = name;
+			// writeURLData();
 
 	
 			//removes unfinished urls after transferring them to urlDictionary
@@ -496,6 +504,17 @@ io.on('connection', function(socket){
 
 
 //Start of socket helper functions ----------------------------------------------
+function updateTimes(url){
+	let gsheet = new GoogleSpreadsheet(url);
+
+	gsheet.useServiceAccountAuth(creds, function (err) {
+		gsheet.getInfo(function(err){
+			urlDictionary[url] = gsheet.info.updated;
+		});
+	});
+
+};
+
 
 //HOWE
 //we've already passed the url through a parser, but we need to check if the
@@ -690,7 +709,7 @@ function setupStaffSheet(staffURL, data){
 	  		//more efficient means of ensuring that the server isn't being spammed
 	  		setTimeout(function(){
 	  			setupStaffSheet(staffURL, data);
-	  		}, 3000);
+	  		}, 600);
 	  	} else{
 		  	//Adding data to the worksheet!
 	  		console.log("Credentials has been created");;
@@ -1050,7 +1069,6 @@ function updatePartnerSheets(){
 	});
 
 } //updatePartnerSheets();
-
 
 
 
