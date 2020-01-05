@@ -532,6 +532,7 @@ function unusedURL(url, sid){
 }
 
 
+
 //Called for socket emissions in CreateStep1.js
 //Only accesses gsheet
 function checkSheetSharing(event, url, socket){
@@ -547,6 +548,29 @@ function checkSheetSharing(event, url, socket){
 	  	}
 
 	  });
+	
+	console.log("inside checkSheetSharing, about to delete any existing wsheets if found");
+	gsheet.getInfo(function (err) {
+		for(const ws of gsheet.worksheets){
+
+			if(ws.title === staffInputsSheet[0]){
+				ws.del();
+			}
+			if(ws.title === staffCredentialsSheet[0]){
+				ws.del();
+			}
+			if(ws.title === staffOptionalConfigsSheet[0]){
+				ws.del();
+			}
+			if(ws.title === studentInputsSheet[0]){
+				ws.del();
+			}
+			if(ws.title === partnerInputsSheet[0]){
+				ws.del();
+			}
+		}
+	});
+	
 	});
 }
 
@@ -614,7 +638,7 @@ function persistenceCreated(gSheet, addSheetsList){
 
 	console.log(headersArray);
 	for(const ws of gSheet.worksheets){
-		console.log("For loop inside persistenceCreated: " + ws);
+		// console.log("For loop inside persistenceCreated: " + ws);
 		if(ws.title === wsName){
 			return true;
 		}
@@ -1011,15 +1035,6 @@ function updatePartnerSheets(){
 	});
 
 } //updatePartnerSheets();
-
-
-
-
-
-
-
-
-
 
 
 
