@@ -602,9 +602,6 @@ function deleteSheetsForInitialization(url){
 				if(ws.title === staffInputsSheet[0]){
 					ws.del();
 				}
-				if(ws.title === staffOptionalConfigsSheet[0]){
-					ws.del();
-				}
 				if(ws.title === studentInputsSheet[0]){
 					ws.del();
 				}
