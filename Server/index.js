@@ -69,9 +69,10 @@ const unfinishedURLs = {};
 
 
 
-const staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Partner Sheet Index", "Student Sheet Index", "Student Applied to Index", "Updates", "Rejected Partners", "Rejected Students", "Starred Students"]];
-const staffCredentialsSheet = ["Credentials", ["Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL", "Org Name", "Org Link"]];
-const staffOptionalConfigsSheet = ["Staff Optional Configs", ["Org Name", "Org Link"]]; //NOT IN USE SO FAR
+const staffInputsSheet = ["Staff Inputs", ["Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL",
+												 "Org Name", "Org Link", "Selected Spreadsheet Columns", "Partner Sheet Index",
+												 "Student Sheet Index", "Student Applied to Index", "Updates",
+												"Rejected Partners", "Rejected Students", "Starred Students"]];
 const studentInputsSheet = ["Student Inputs", ["Student Email", "Confirmation if Accepted"]];
 const partnerInputsSheet = ["Partner Inputs", ["Partner Email", "Project", "Lead", "Hash Identifier", "Hashed Password", "Application Reviews"]];
 
@@ -184,7 +185,6 @@ io.on('connection', function(socket){
 
 	//-------- Login.js --------
 
-	//CURR
 	//if made it to loginSubmitted, then we know that the workspace was correct, and we now have group info
 	//not a problem if someone tries to spoof email and workspace -- without password they can't access info
 	socket.on("loginSubmitted", function(data){
@@ -203,10 +203,10 @@ io.on('connection', function(socket){
 		staffSheet.useServiceAccountAuth(creds, function (err) {
 
 			staffSheet.getInfo(function(err){
-			let credentialsIndex = getWsheetIndex(staffSheet, staffCredentialsSheet[0]);
+			let staffIndex = getWsheetIndex(staffSheet, staffInputsSheet[0]);
 
-				if(credentialsIndex !== null && compareURLTimes(staffURL, staffSheet) === true){
-				 	staffSheet.getRows(credentialsIndex, function (err, rows){
+				if(staffIndex !== null && compareURLTimes(staffURL, staffSheet) === true){
+				 	staffSheet.getRows(staffIndex, function (err, rows){
 					  	let columns = {};
 					  	var count = 0;
 					    for (const key in rows[0]){
@@ -215,16 +215,25 @@ io.on('connection', function(socket){
 					    }
 					    //use as key for now
 					    console.log(columns);
-
+	//CURR
 					    if(group === "Staff"){
 							if(rows[0][columns[5]]===password && rows[0][columns[4]]===email){
+								//full function for 
 								socket.emit("loginValidation", {valid: true, renderdata: null});		
 							} else{
 								socket.emit("loginValidation", {valid: false});
 							}
 					    }else if(group==="Student"){
+					    	let studentURL = rows[0][columns[7]];
+					    	let studentSheet = new GoogleSpreadsheet(studentURL);
+
+
 								//send student data over... look into student sheets
 						}else if(group==="Partner"){
+							let partnerURL = rows[0][columns[8]];
+							let partnerSheet = new GoogleSpreadsheet(partnerURL);
+
+
 								//send partner data over... look into partner sheets
 						}
 					});
@@ -427,8 +436,8 @@ io.on('connection', function(socket){
 			let staffURL = urls[0];
 			let studentURL = urls[1];
 			let partnerURL = urls[2];
-			//should create the persistence layers (Credentials, Staff Inputs) in staffURL
-			console.log("Entering setupStaffSheet... about to apply credentials");
+			//should create the persistence layers Staff Inputs in staffURL
+			console.log("Entering setupStaffSheet...");
 
 
 			let staffData = {"Workspace Name": name, "Staff Email": email, "Staff Password": password,
@@ -593,9 +602,6 @@ function deleteSheetsForInitialization(url){
 				if(ws.title === staffInputsSheet[0]){
 					ws.del();
 				}
-				if(ws.title === staffCredentialsSheet[0]){
-					ws.del();
-				}
 				if(ws.title === staffOptionalConfigsSheet[0]){
 					ws.del();
 				}
@@ -706,12 +712,6 @@ function setupStaffSheet(staffURL, data){
 
 	  	if (!persistenceCreated(staffGsheet, staffInputsSheet)){
 	  		console.log("Staff Inputs is being created");
-	  	} else{
-	  		console.log("Staff Inputs has been created")
-	  	}
-
-	  	if (!persistenceCreated(staffGsheet, staffCredentialsSheet)){
-	  		console.log("Credentials is being created");
 
 	  		//more efficient means of ensuring that the server isn't being spammed
 	  		setTimeout(function(){
@@ -719,9 +719,9 @@ function setupStaffSheet(staffURL, data){
 	  		}, 600);
 	  	} else{
 		  	//Adding data to the worksheet!
-	  		console.log("Credentials has been created");;
+	  		console.log("Staff Inputs has been created");;
 	  		
-	  		getWsheetAndApply(staffGsheet, "Credentials", applyCredentials(data));
+	  		getWsheetAndApply(staffGsheet, "Staff Inputs", applyCredentials(data));
 	  	}
 
 	  });
@@ -809,7 +809,6 @@ function getWsheetAndApply(gsheet, wsheetName, funcToApply){
 }
 
 
-//must return a functin
 function applyCredentials(data){
 	console.log(data);
 	let keyVals = data;
@@ -817,10 +816,7 @@ function applyCredentials(data){
 	addRowToSheet = (wsheet) =>{
   		//need to check if adding rows will automatically expand the spreadsheet, or if the amount of space needs to be specified first
 		wsheet.addRow(keyVals, function(err){});
-
-		//need to include 
 	}
-
 	return addRowToSheet;
 }
 
