@@ -29,11 +29,10 @@ class NavigationBar extends Component {
 	  		navbar.push(
 
 			          <li className="nav-item" key = {name}>
-			            <a className="nav-link" onClick = {func}>{name}</a>
+			            <a className="nav-link" href = "#" onClick = {func}>{name}</a>
 			          </li>
 	  			);
 	  	}
-
 	  	return navbar;
   }
 
@@ -66,11 +65,8 @@ class NavigationBar extends Component {
 
 			<div className="collapse navbar-collapse justify-content-end" id="navbarsExample03">
 		        <ul className="navbar-nav">
-
-		        {this.createNavBar(this.props.navbarItems)}
-
+		        	{this.createNavBar(this.props.navbarItems)}
 		        </ul>
-
 		    </div>
 
 
@@ -110,11 +106,11 @@ class NavigationBar extends Component {
 
 
 		          <li className="nav-item dropdown">
-		            <a className="nav-link dropdown-toggle" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
+		            <a className="nav-link dropdown-toggle" href="#" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
 		            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown03">
-		              <a className="dropdown-item" onClick = {this.props.onSignOut}>Logout</a>
-		              <a className="dropdown-item" href="https://getbootstrap.com/docs/4.0/examples/navbars/#">Another action</a>
-		              <a className="dropdown-item" href="https://getbootstrap.com/docs/4.0/examples/navbars/#">Something else here</a>
+		              <a className="dropdown-item" href="#" onClick = {this.props.onSignOut}>Logout</a>
+		              <a className="dropdown-item" href="#">Another action</a>
+		              <a className="dropdown-item" href="#">Something else here</a>
 		            </div>
 		          </li>
 		        </ul>
@@ -127,8 +123,6 @@ class NavigationBar extends Component {
   	}
   }
 }
-
-
 
 
 /*

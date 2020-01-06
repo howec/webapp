@@ -188,94 +188,51 @@ io.on('connection', function(socket){
 	//if made it to loginSubmitted, then we know that the workspace was correct, and we now have group info
 	//not a problem if someone tries to spoof email and workspace -- without password they can't access info
 	socket.on("loginSubmitted", function(data){
-		console.log("Form has been submitted. workspace:" + data.workspace);
-		console.log("Form has been submitted. group:" + data.group);
-		console.log("Form has been submitted. email: " + data.email);
-		console.log("Form has been submitted. password: " + data.password);
-		
 		let workspace = data.workspace;
 		let group = data.group;
 		let email = data.email;
 		let password = data.password;
 
-
-
 		//should be encapsulated in a login check first:
 		loggedUsers[socket.id] = data.email;
 		delete activeUsers[socket.id];
 
-		//on successful login, submit all the information over
-		//information (NavigationBar): url & name from staff... if needed
-		//information (page on client): personal doc information (all of it)
-			//information for staff: columns to allow partners to see, current progress for everyone
-			//information for partner: student profiles based on columns, student responses
-			//information for student: partner responses (interview, reject, acceptance, waitlist)
-		//status update for the person, taking parameter (group and email)
-			//email is used to look at the applicant's response, NOT fields.
-			//
-
 		let staffURL = workspaceDictionary[workspace];
-		let gsheet = new GoogleSpreadsheet(staffURL);
+		let staffSheet = new GoogleSpreadsheet(staffURL);
 
-		//if group == staff
-		//NOTE: gsheet accessed and modified
-		gsheet.useServiceAccountAuth(creds, function (err) {
-			gsheet.getInfo(function(err){
+		staffSheet.useServiceAccountAuth(creds, function (err) {
 
+			staffSheet.getInfo(function(err){
+			let credentialsIndex = getWsheetIndex(staffSheet, staffCredentialsSheet[0]);
 
-			let sheetIndex = getWsheetIndex(gsheet, staffCredentialsSheet[0]);
-			console.log(gsheet);
-			console.log(staffCredentialsSheet[0])
-			console.log(sheetIndex);
-			if(sheetIndex !== null){
-			 	gsheet.getRows(sheetIndex, function (err, rows){
-					  	console.log("Inside loginSubmitted");
-
+				if(credentialsIndex !== null && compareURLTimes(staffURL, staffSheet) === true){
+				 	staffSheet.getRows(credentialsIndex, function (err, rows){
 					  	let columns = {};
-
 					  	var count = 0;
 					    for (const key in rows[0]){
 					    	columns[count] = key;
 					    	count = count + 1;
 					    }
-
+					    //use as key for now
 					    console.log(columns);
 
-						function loginCallback(){
+					    if(group === "Staff"){
 							if(rows[0][columns[5]]===password && rows[0][columns[4]]===email){
-								//HOWE
-								//conditionals on what data to send here
-								if(group==="Staff"){
-									//send only staff data over
-									//data to staff should be ALL of the data from student and partner
-									//perhaps a list of the two, each inside its own dictionary
-									//maybe dictionary of dictionaries
-								}else if(group==="Student"){
-									//send student data over... look into student sheets
-								}else if(group==="Partner"){
-									//send partner data over... look into partner sheets
-								}
-								//just emit true for now if the password matches
-								socket.emit("loginValidation", {valid: true});
+								socket.emit("loginValidation", {valid: true, renderdata: null});		
 							} else{
 								socket.emit("loginValidation", {valid: false});
 							}
+					    }else if(group==="Student"){
+								//send student data over... look into student sheets
+						}else if(group==="Partner"){
+								//send partner data over... look into partner sheets
 						}
-
-						compareURLTimes(staffURL, loginCallback);
-
 					});
 				} else{
 					socket.emit("loginValidation", {valid: false});
 				}
 			});
 		});
-
-
-
-
-
-
 	});
 
 	//not sure where this is
@@ -546,20 +503,15 @@ function updateURLTimes(url, timeout){
 //function to compareURLTimes of any sheet you are trying to access
 //if the times do not match, abort accessing the sheet to prevent the server from crashing
 //the times matching are our only guarantee of the data's integrity
-function compareURLTimes(url, callback){
-	let gsheet = new GoogleSpreadsheet(url);
+function compareURLTimes(url, gsheet){
+	console.log("inside compareURLTimes");
 
-	gsheet.useServiceAccountAuth(creds, function (err) {
-		gsheet.getInfo(function(err){
-			console.log("inside compareURLTimes");
-			if(urlDictionary[url] === gsheet.info.updated){
-				console.log("urlDictionary matched");
-				callback();
-			} else{
-				console.log("urlDictionary was tampered with");
-			}
-		});
-	});
+	if(urlDictionary[url] === gsheet.info.updated){
+		console.log("urlDictionary matched");
+		return true;
+	} else{
+		return false;		
+	}
 }
 
 
