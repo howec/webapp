@@ -69,8 +69,8 @@ const unfinishedURLs = {};
 
 
 
-const staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Updates", "Rejected Partners", "Rejected Students", "Starred Students"]];
-const staffCredentialsSheet = ["Credentials", ["Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL", "Partner Sheet Index", "Student Sheet Index", "Student Applied to Index", "Org Name", "Org Link"]];
+const staffInputsSheet = ["Staff Inputs", ["Selected Spreadsheet Columns", "Partner Sheet Index", "Student Sheet Index", "Student Applied to Index", "Updates", "Rejected Partners", "Rejected Students", "Starred Students"]];
+const staffCredentialsSheet = ["Credentials", ["Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL", "Org Name", "Org Link"]];
 const staffOptionalConfigsSheet = ["Staff Optional Configs", ["Org Name", "Org Link"]]; //NOT IN USE SO FAR
 const studentInputsSheet = ["Student Inputs", ["Student Email", "Confirmation if Accepted"]];
 const partnerInputsSheet = ["Partner Inputs", ["Partner Email", "Project", "Lead", "Hash Identifier", "Hashed Password", "Application Reviews"]];
@@ -247,6 +247,9 @@ io.on('connection', function(socket){
 								//conditionals on what data to send here
 								if(group==="Staff"){
 									//send only staff data over
+									//data to staff should be ALL of the data from student and partner
+									//perhaps a list of the two, each inside its own dictionary
+									//maybe dictionary of dictionaries
 								}else if(group==="Student"){
 									//send student data over... look into student sheets
 								}else if(group==="Partner"){
@@ -496,7 +499,7 @@ io.on('connection', function(socket){
 					workspaceDictionary[name] = staffURL;
 					writeWorkspaceData();
 				}, 600);
-			}, 600);
+			}, 1000);
 
 
 			// //HOWE: must change these values to last edited for security purposes
