@@ -14,6 +14,21 @@ class CreateStep1 extends Component {
     this.state = {workspaceOK: null, staffOK: null};
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
 
   //HOWE: Note that the next steps for user quality of experience would be
   //to display the error messages from the socket emissions. That is currently
@@ -29,11 +44,11 @@ class CreateStep1 extends Component {
 
       if(data.shared === true){
         url = data.url;
-        this.setState({staffOK: true})
+        this.changeState({staffOK: true})
       } 
       if(data.shared === false){
         url = data.url;
-        this.setState({staffOK: false});
+        this.changeState({staffOK: false});
       }
     
       this.nextPart(url);
@@ -50,11 +65,11 @@ class CreateStep1 extends Component {
 
     socket.on("workspaceStatus", (data)=>{
       if(data.ok === true){
-        this.setState({workspaceOK: true});
+        this.changeState({workspaceOK: true});
       }
 
       if(data.ok === false){
-        this.setState({workspaceOK: false});
+        this.changeState({workspaceOK: false});
       }
       console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
       console.log(this.state.workspaceOK)
@@ -63,11 +78,11 @@ class CreateStep1 extends Component {
     socket.on("urlStatus", (data)=>{
       //just in case?
       if(data.ok === true){
-        this.setState({staffOK: true});
+        this.changeState({staffOK: true});
       }
 
       if(data.ok === false){
-        this.setState({staffOK: false});
+        this.changeState({staffOK: false});
       }
 
       console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);

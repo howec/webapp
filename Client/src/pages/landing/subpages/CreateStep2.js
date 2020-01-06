@@ -14,6 +14,21 @@ class CreateStep2 extends Component {
     this.state = {partnerOK: null, studentOK: null}
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
 
   //HOWE: Note that the next steps for user quality of experience would be
   //to display the error messages from the socket emissions. That is currently
@@ -29,11 +44,11 @@ class CreateStep2 extends Component {
       console.log("entered partnerShared");
       if(data.shared === true){
         urlPartner = data.url;
-        this.setState({partnerOK: true})
+        this.changeState({partnerOK: true})
       } 
       if(data.shared === false){
         urlPartner = data.url;
-        this.setState({partnerOK: false});
+        this.changeState({partnerOK: false});
       }
 
       console.log(this.state.partnerOK);
@@ -46,11 +61,11 @@ class CreateStep2 extends Component {
       console.log("entered studentShared");
       if(data.shared === true){
         urlStudent = data.url;
-        this.setState({studentOK: true})
+        this.changeState({studentOK: true})
       } 
       if(data.shared === false){
         urlStudent = data.url;
-        this.setState({studentOK: false});
+        this.changeState({studentOK: false});
       }
 
       console.log(this.state.studentOK);
@@ -79,11 +94,11 @@ class CreateStep2 extends Component {
     socket.on("partnerStatus", (data)=>{
       //just in case?
       if(data.ok === true){
-        this.setState({partnerOK: true});
+        this.changeState({partnerOK: true});
       }
 
       if(data.ok === false){
-        this.setState({partnerOK: false});
+        this.changeState({partnerOK: false});
       }
 
       console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);
@@ -94,11 +109,11 @@ class CreateStep2 extends Component {
     socket.on("studentStatus", (data)=>{
       //just in case?
       if(data.ok === true){
-        this.setState({studentOK: true});
+        this.changeState({studentOK: true});
       }
 
       if(data.ok === false){
-        this.setState({studentOK: false});
+        this.changeState({studentOK: false});
       }
 
       console.log("SKJSLKDJSKDJLKSJFKL: " + data.msg);

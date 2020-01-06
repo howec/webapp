@@ -18,53 +18,67 @@ class App extends Component{
     group values: null, Students, Staff, Partners
     */
     this.state = {logsign: null, url: null, loggedIn: false, group: null, profile: null, data: null};
+  }
 
-    socket.emit('FINALLY', {msg: "event from App.js"});
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
   }
 
   setData = (d) =>{
-    this.setState({data: d});
+    this.changeState({data: d});
   }
 
   //To delete
   setGroupApp = (g) =>{
-    this.setState({group: g});
+    this.changeState({group: g});
   }
 
   onLogIn = (group, urlList, data) => {
     //urlList and data currently not set
     let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
-    this.setState({logsign: "Normal"});
-    this.setState({url: urlStuff}); // HOWE
-    this.setState({loggedIn: true});
-    this.setState({group: group});
+    this.changeState({logsign: "Normal"});
+    this.changeState({url: urlStuff}); // HOWE
+    this.changeState({loggedIn: true});
+    this.changeState({group: group});
 
 
-    this.setState({data: data});//HOWE
+    this.changeState({data: data});//HOWE
   }
 
   onSignIn = (googleUser) => {
     //should I be configuring a "group?"
-    this.setState({logsign: "Google"});
+    this.changeState({logsign: "Google"});
 
 
     //!!!!!TODO: need to make a function to get the url stuff, input from staff
     let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
-    this.setState({url: urlStuff});
+    this.changeState({url: urlStuff});
 
     console.log("SignedIn");
-    this.setState({loggedIn: true});
+    this.changeState({loggedIn: true});
     console.log("signed in! " + this.state.loggedIn);
             console.log("URL: " + this.state.url);
 
 
     //!!!!!TODO: some function to tell you what group the person belongs in
-    this.setState({group: "Staff"})
+    this.changeState({group: "Staff"})
     console.log("new group is: " + this.state.group);
     console.log("signed in! " + this.state.loggedIn);
 
 
-    this.setState({profile: googleUser.getBasicProfile()});
+    this.changeState({profile: googleUser.getBasicProfile()});
 
     console.log('ID: ' + this.state.profile.getId()); // Do not send to your backend! Use an ID token instead.
     console.log('Name: ' + this.state.profile.getName());
@@ -80,7 +94,7 @@ class App extends Component{
     socket.on("sendingattempt", (data) =>{
       console.log("IN SENDING ATTEMPT");
         console.log(data);
-        this.setState({data: data["attempt"]});
+        this.changeState({data: data["attempt"]});
         console.log("From within the set state.... " + JSON.stringify(this.state.data));
 
     });
@@ -91,7 +105,7 @@ class App extends Component{
 
   gSignOut = () => {
     console.log("INSIDE THE SIGNOUT FUNCTION");
-    this.setState({logsign: null, loggedIn: false, group: null, url: null});
+    this.changeState({logsign: null, loggedIn: false, group: null, url: null});
 
     var auth2 = window.gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
@@ -103,7 +117,7 @@ class App extends Component{
 
   nLogOut = () => {
     console.log("INSIDE THE SIGNOUT FUNCTION");
-    this.setState({logsign: null, loggedIn: false, group: null, url: null});
+    this.changeState({logsign: null, loggedIn: false, group: null, url: null});
 
     socket.emit('loggedout', {});
   }

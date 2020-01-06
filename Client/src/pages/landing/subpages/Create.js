@@ -17,16 +17,31 @@ class Create extends Component {
     this.state = {step: "Step1"};
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+ changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
 
   toNextStep = () => {
     console.log("The current step is.... " + this.state.step);
 
     if(this.state.step == "Step1"){
-      this.setState({step: "Step2"});
+      this.changeState({step: "Step2"});
     }else if(this.state.step == "Step2"){
-      this.setState({step: "Step3"});
+      this.changeState({step: "Step3"});
     }else if (this.state.step == "Step3"){
-      this.setState({step: "Step1"});
+      this.changeState({step: "Step1"});
       this.props.toConfirmation();
     }
   }

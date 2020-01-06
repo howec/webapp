@@ -17,24 +17,40 @@ class Partners extends Component {
     this.state = {page: "Home"}
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
+
 
   toHome = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Home"})
+      this.changeState({page: "Home"})
     }
   }
 
 
   toApplicants = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Applicants"})
+      this.changeState({page: "Applicants"})
     }
   }
 
 
   toProfile = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Profile"})
+      this.changeState({page: "Profile"})
     }
   }
 

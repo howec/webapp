@@ -17,6 +17,22 @@ class Login extends Component {
     this.state = {valid: null, step: null, workspace: null, group: null}
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
+
   responseGoogleFail = (response) => {
     console.log("FAILED TO SIGN IN. " + JSON.stringify(response));
   }
@@ -59,9 +75,9 @@ class Login extends Component {
     //assuming that the validation function actually works...
     socket.on('workspaceValidation', (arg) => {
       if(arg.valid == true){
-        this.setState({workspace: workspace, valid: true, step: "LoginAs"});
+        this.changeState({workspace: workspace, valid: true, step: "LoginAs"});
       } else{
-        this.setState({valid: false});
+        this.changeState({valid: false});
       }
     });
   }
@@ -82,15 +98,15 @@ class Login extends Component {
   }
 
   setGroupStaff = () => {
-    this.setState({group: "Staff", step: "Staff"});
+    this.changeState({group: "Staff", step: "Staff"});
   }
 
   setGroupStudents = () => {
-    this.setState({group: "Students", step: "Students"});
+    this.changeState({group: "Students", step: "Students"});
   }
 
   setGroupPartners = () => {
-    this.setState({group: "Partners", step: "Partners"});
+    this.changeState({group: "Partners", step: "Partners"});
   }
 
   render() {

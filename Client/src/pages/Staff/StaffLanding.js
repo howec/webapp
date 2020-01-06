@@ -19,31 +19,47 @@ class Staff extends Component {
     this.state = {page: "Home"}
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
+
 
   toHome = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Home"});
+      this.changeState({page: "Home"});
     }
   }
 
 
   toStaff = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Staff"});
+      this.changeState({page: "Staff"});
     }
   }
 
 
   toStudents = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Students"});
+      this.changeState({page: "Students"});
     }
   }
 
 
   toPartners = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Partners"});
+      this.changeState({page: "Partners"});
     }
   }
 

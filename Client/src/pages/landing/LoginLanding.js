@@ -13,22 +13,38 @@ import { Column, Row } from 'simple-flexbox';
 
 
 class Landing extends Component {
-
   constructor(props){
     super(props);
     this.state = {page: "Login"};
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
+
+
   toCreate = () => {
-    this.setState({page: "Create"});
+    this.changeState({page: "Create"});
   }
 
   toConfirmation = () => {
-    this.setState({page: "Confirmation"});
+    this.changeState({page: "Confirmation"});
   }
 
   toLogin = () => {
-    this.setState({page: "Login"});
+    this.changeState({page: "Login"});
   }
 
 

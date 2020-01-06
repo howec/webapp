@@ -11,6 +11,21 @@ class Profile extends Component {
 
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
 
   render() {
     if(this.props.page == 'Profile'){

@@ -17,7 +17,16 @@ Terminology:
 
 TODO:
 	Must add password hashing to both frontend/backend
-	On the topic of security, may want to consider hmacs, encryption, etc.
+	On the topic of security, may want to consider hmacs, encryption, etc. //Confidentiality, Authenticity
+	Integrity solution: For all sheet modifications, the last modified time MUST be recorded for security purposes.
+		If a person obtained access to workspace sheets and has maliciously modified the column/row values, the next
+		calls for this workspace will VERY LIKELY break the server if there is no check on last modified time
+		made by the server to guarantee the data's integrity. In the case that the data has been tampered with,
+		the server needs to refuse client calls out of self-preservation. Theoretically this is not foolproof, but
+		it is a lot better than a naive implementation. A better implementation would be to see WHO last modified
+		the sheet, but it does not look like that is possible for now. An alternative would be to hash everything
+		and store that value in URLDictionary instead of the time. It's an easy fix, but would require a lot
+		more work.
 	Function to restore/reset password... only for the backend
 	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
 	Less worried about doing this in account creation, though it is theoretically possible that someone jams
@@ -25,11 +34,7 @@ TODO:
 		exceptions. --> TESTED: will be fine. No null exceptions occur if the server attempts to add a row into
 		a non-existent wsheet. HOWEVER, must still be careful of getter methods when the clients request data
 		upon login.
-	Security solution: For all sheet modifications, the last modified time MUST be recorded for security purposes.
-		If a person obtained access to workspace sheets and has maliciously modified the column/row values, the next
-		calls for this workspace will VERY LIKELY break the server if there is no check on last modified time
-		made by the server to guarantee the data's integrity. In the case that the data has been tampered with,
-		the server needs to refuse client calls out of self-preservation.
+
 
 */
 
@@ -68,7 +73,32 @@ const unfinishedWorkspaces = {};
 const unfinishedURLs = {};
 
 
-
+/*
+Staff Inputs Columns
+  '0': '_xml',
+  '1': 'id',
+  '2': 'app:edited',
+  '3': '_links',
+  '4': 'staffemail',
+  '5': 'staffpassword',
+  '6': 'workspacename',
+  '7': 'studentsheeturl',
+  '8': 'partnersheeturl',
+  '9': 'orgname',
+  '10': 'orglink',
+  '11': 'selectedspreadsheetcolumns',
+  '12': 'partnersheetindex',
+  '13': 'studentsheetindex',
+  '14': 'studentappliedtoindex',
+  '15': 'updates',
+  '16': 'rejectedpartners',
+  '17': 'rejectedstudents',
+  '18': 'starredstudents',
+  '19': 'save',
+  '20': 'del'
+//Should have two columns: dedicated to renaming the column sheets from Partner, and another for Student
+//two additional columns that express whether staff have configured the studentInputsSheet and partnerInputsSheet
+*/
 const staffInputsSheet = ["Staff Inputs", ["Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL",
 												 "Org Name", "Org Link", "Selected Spreadsheet Columns", "Partner Sheet Index",
 												 "Student Sheet Index", "Student Applied to Index", "Updates",
@@ -194,8 +224,8 @@ io.on('connection', function(socket){
 		let password = data.password;
 
 		//should be encapsulated in a login check first:
-		loggedUsers[socket.id] = data.email;
 		delete activeUsers[socket.id];
+		loggedUsers[socket.id] = data.email;
 
 		let staffURL = workspaceDictionary[workspace];
 		let staffSheet = new GoogleSpreadsheet(staffURL);
@@ -226,15 +256,30 @@ io.on('connection', function(socket){
 					    }else if(group==="Student"){
 					    	let studentURL = rows[0][columns[7]];
 					    	let studentSheet = new GoogleSpreadsheet(studentURL);
+							studentSheet.useServiceAccountAuth(creds, function (err) {
+								studentSheet.getInfo(function(err){
+									//check if sheet has been configured
+									//check if the sheet has not been tampered with
+									//need to compare where the email index is
+									//check if the passwords match
 
+									//send student data over... look into student sheets
+								});
+							});
 
-								//send student data over... look into student sheets
 						}else if(group==="Partner"){
 							let partnerURL = rows[0][columns[8]];
 							let partnerSheet = new GoogleSpreadsheet(partnerURL);
+							partnerSheet.useServiceAccountAuth(creds, function (err) {
+								partnerSheet.getInfo(function(err){
+									//check if sheet has been configured
+									//check if the sheet has not been tampered with
+									//need to compare where the email index is
+									//check if the passwords match
 
-
-								//send partner data over... look into partner sheets
+									//send partner data over... look into partner sheets
+								});
+							});
 						}
 					});
 				} else{
@@ -266,14 +311,6 @@ io.on('connection', function(socket){
 		sendPartnerSpreadsheet(socket, data.email);
  
 	});
-
-
-	//HOWE tdl... not sure where this is
-	socket.on('FINALLY', function(data){
-		console.log(data.msg + " SocketID is: " + socket.id);
-	});
-
-
 
 	socket.on('workspaceSubmitted', function(data){
 		if(workspaceDictionary[data.workspace]){
@@ -537,7 +574,6 @@ function parseURL(url){
 	return url;
 }
 
-//HOWE: Known bug... check fails when gibberish is put in, and then a previously used url is entered
 //this will store ANY url recently submitted into a temporary memory space, which is cleared on disconnect
 function unusedURL(url, sid){
 	console.log("inside unusedURL. The URL is: " + url);

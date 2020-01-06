@@ -20,23 +20,39 @@ class Students extends Component {
     this.state = {page: "Home"}
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
+
 
   toHome = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Home"});
+      this.changeState({page: "Home"});
     }
   }
 
 
   toApplications = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Applications"});
+      this.changeState({page: "Applications"});
     }
   }
   
   toProfile = () => {
     if(this.props.loggedIn == true){
-      this.setState({page: "Profile"});
+      this.changeState({page: "Profile"});
     }
   }
 

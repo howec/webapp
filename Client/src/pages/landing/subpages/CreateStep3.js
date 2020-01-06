@@ -13,6 +13,21 @@ class CreateStep3 extends Component {
     super(props);
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
 
   //HOWE: Note that the next steps for user quality of experience would be
   //to display the error messages from the socket emissions. That is currently

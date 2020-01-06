@@ -11,6 +11,21 @@ class Confirmation extends Component {
     super(props);
   }
 
+  _isMounted=false;
+  
+  componentDidMount(){
+   this._isMounted=true;
+  }
+
+  componentWillUnmount(){
+    this._isMounted=false;
+  }
+
+  changeState(data){
+    if(this._isMounted){
+      this.setState(data)
+    }
+  }
 
   responseGoogle = (response) => {
     console.log("FAILED TO SIGN IN. " + JSON.stringify(response));
