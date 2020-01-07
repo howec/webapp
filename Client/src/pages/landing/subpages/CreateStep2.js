@@ -143,13 +143,13 @@ class CreateStep2 extends Component {
     event.preventDefault();
     this.createWorkspaceHandler();
     
-    if(this.state.partnerOK == true){
+    if(this.state.partnerOK === true){
       console.log("The sheet has been shared!");
     } else{
       console.log("The sheet hasn't been shared");
     }
 
-    if(this.state.studentOK == true){
+    if(this.state.studentOK === true){
       console.log("The sheet has been shared!");
     } else{
       console.log("The sheet hasn't been shared");
@@ -162,7 +162,7 @@ class CreateStep2 extends Component {
 
 
   render() {
-    if(this.props.step == "Step2"){
+    if(this.props.step === "Step2"){
       return(
 
          <div className="center-me">

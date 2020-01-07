@@ -38,7 +38,7 @@ class Confirmation extends Component {
 
 
   render() {
-    if(this.props.page == "Confirmation"){
+    if(this.props.page === "Confirmation"){
       return(
         <div className="center-me">
           <Column horizontal = 'center'>

@@ -123,7 +123,7 @@ class App extends Component{
   }
 
   onSignOut = () =>{
-    if(this.state.logsign == "Normal"){
+    if(this.state.logsign === "Normal"){
       return this.nLogOut();
     } else{
       return this.gSignOut;

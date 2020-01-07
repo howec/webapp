@@ -54,7 +54,7 @@ class Login extends Component {
     socket.emit("loginSubmitted", {workspace: this.state.workspace, group: this.state.group, email: email, password: password});
 
     socket.on('loginValidation', (arg) => {
-      if(arg.valid == true){
+      if(arg.valid === true){
 
         //HOWE replace null values
         this.props.onLogIn(this.state.group, null, null);
@@ -74,7 +74,7 @@ class Login extends Component {
   
     //assuming that the validation function actually works...
     socket.on('workspaceValidation', (arg) => {
-      if(arg.valid == true){
+      if(arg.valid === true){
         this.changeState({workspace: workspace, valid: true, step: "LoginAs"});
       } else{
         this.changeState({valid: false});
@@ -83,7 +83,7 @@ class Login extends Component {
   }
 
   workspaceError = () => {
-    if(this.state.valid != false){
+    if(this.state.valid !== false){
       return null;
     }
     return (<p><i><font color="#CD5C5C">That workspace doesn't exist!</font></i></p>);
@@ -91,7 +91,7 @@ class Login extends Component {
 
 //fails on incorrect login info OR credentials sheet was not found
   loginError = () => {
-    if(this.state.valid != false){
+    if(this.state.valid !== false){
       return null;
     }
     return (<p><i><font color="#CD5C5C">Login failed!</font></i></p>);
@@ -110,7 +110,7 @@ class Login extends Component {
   }
 
   render() {
-      if(this.state.step==null){
+      if(this.state.step===null){
         return(
             <div className="center-me">
             <Column horizontal='center' flexGrow={1}>
@@ -140,7 +140,7 @@ class Login extends Component {
 
           </div>
         )
-      } else if(this.state.step == "LoginAs") {
+      } else if(this.state.step === "LoginAs") {
           return (
             <div className='center-me'>
 

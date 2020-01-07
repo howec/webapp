@@ -75,7 +75,7 @@ class CreateStep3 extends Component {
 
 
   render() {
-    if(this.props.step == "Step3"){
+    if(this.props.step === "Step3"){
       return(
 
          <div className="center-me">

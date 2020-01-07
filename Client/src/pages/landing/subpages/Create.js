@@ -36,11 +36,11 @@ class Create extends Component {
   toNextStep = () => {
     console.log("The current step is.... " + this.state.step);
 
-    if(this.state.step == "Step1"){
+    if(this.state.step === "Step1"){
       this.changeState({step: "Step2"});
-    }else if(this.state.step == "Step2"){
+    }else if(this.state.step === "Step2"){
       this.changeState({step: "Step3"});
-    }else if (this.state.step == "Step3"){
+    }else if (this.state.step === "Step3"){
       this.changeState({step: "Step1"});
       this.props.toConfirmation();
     }
@@ -48,7 +48,7 @@ class Create extends Component {
 
 
   render() {
-    if(this.props.page == "Create"){
+    if(this.props.page === "Create"){
       return(
         <div>
           <CreateStep1 toNextStep = {this.toNextStep} step = {this.state.step}/>

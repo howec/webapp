@@ -106,7 +106,7 @@ class NavigationBar extends Component {
 
 
 		          <li className="nav-item dropdown">
-		            <a className="nav-link dropdown-toggle" href="#" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
+		            <a className="nav-link dropdown-toggle" href="#" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">More</a>
 		            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown03">
 		              <a className="dropdown-item" href="#" onClick = {this.props.onSignOut}>Logout</a>
 		              <a className="dropdown-item" href="#">Another action</a>

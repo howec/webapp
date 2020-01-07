@@ -50,8 +50,8 @@ class Landing extends Component {
 
   render() {
     // if on the "Login" page
-    if(this.props.group == null){
-      if(this.state.page == "Login"){
+    if(this.props.group === null){
+      if(this.state.page === "Login"){
         return(
           <div>
             <div>
@@ -70,7 +70,7 @@ class Landing extends Component {
               </div>
           </div>
         )
-      } else if(this.state.page == "Create"){
+      } else if(this.state.page === "Create"){
         return (
           <div>
             <div>
@@ -86,7 +86,7 @@ class Landing extends Component {
             </div>
           </div>
         )
-      } else if(this.state.page == "Confirmation"){
+      } else if(this.state.page === "Confirmation"){
         return (
           <div>
             <div>
