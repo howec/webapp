@@ -28,7 +28,7 @@ class Students extends Component {
   }
 
   render() {
-    if(this.props.page == 'Students'){
+    if(this.props.page === 'Students'){
       return (
         <div>
           <h1> [[Students]] subpage from STAFF. </h1>

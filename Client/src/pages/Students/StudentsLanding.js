@@ -69,7 +69,7 @@ class Students extends Component {
               navbarItems = {[[this.toHome, "Home"], [this.toApplications, "Applications"], [this.toProfile, "Profile"]]}/>
 				  </div>
 
-          <div>
+          <div style = {{margin: "50px"}}>
             <h1> Students page! </h1>
             <HomeSubpage page = {this.state.page}/>
             <ApplicationsSubpage page = {this.state.page}/>

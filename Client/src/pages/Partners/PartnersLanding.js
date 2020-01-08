@@ -69,7 +69,7 @@ class Partners extends Component {
               navbarItems = {[[this.toHome, "Home"], [this.toApplicants, "Applicants"], [this.toProfile, "Profile"]]}/>
 				  </div>
 
-          <div>
+          <div style = {{margin: "50px"}}>
             <h1> Partners page! </h1>
             <HomeSubpage page = {this.state.page} data = {this.props.data}/>
             <ApplicantsSubpage page = {this.state.page} data = {this.props.data}/>

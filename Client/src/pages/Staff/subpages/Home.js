@@ -28,7 +28,7 @@ class Home extends Component {
   }
 
   render() {
-  	if(this.props.page == 'Home'){
+  	if(this.props.page === 'Home'){
 	    return (
 	    	<div>
 				  <h1> [[Home]] subpage from STAFF. </h1>

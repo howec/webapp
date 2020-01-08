@@ -21,11 +21,14 @@
   align-items:center;
 }*/
 
-/*.navbar-holder, .page-holder {
-  display:flex;
-  flex-flow:row wrap;
-}*/
+/*.navbar .navbar-collapse {
+  text-align:center;
+}
 
+
+.navbar-toggler{
+  display: flex;
+}*/
 
 /*! 
  * Primitive UI | MIT License

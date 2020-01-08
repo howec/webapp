@@ -34,6 +34,7 @@ TODO:
 		exceptions. --> TESTED: will be fine. No null exceptions occur if the server attempts to add a row into
 		a non-existent wsheet. HOWEVER, must still be careful of getter methods when the clients request data
 		upon login.
+	Create export functionality
 
 
 */
@@ -74,7 +75,8 @@ const unfinishedURLs = {};
 
 
 /*
-Staff Inputs Columns
+Staff Inputs -- Columns
+{
   '0': '_xml',
   '1': 'id',
   '2': 'app:edited',
@@ -86,25 +88,52 @@ Staff Inputs Columns
   '8': 'partnersheeturl',
   '9': 'orgname',
   '10': 'orglink',
-  '11': 'selectedspreadsheetcolumns',
-  '12': 'partnersheetindex',
-  '13': 'studentsheetindex',
-  '14': 'studentappliedtoindex',
-  '15': 'updates',
-  '16': 'rejectedpartners',
-  '17': 'rejectedstudents',
-  '18': 'starredstudents',
-  '19': 'save',
-  '20': 'del'
-//Should have two columns: dedicated to renaming the column sheets from Partner, and another for Student
-//two additional columns that express whether staff have configured the studentInputsSheet and partnerInputsSheet
+  '11': 'updates',
+  '12': 'studentsheetindex',
+  '13': 'selectedcolumnsfromstudentspreadsheet',
+  '14': 'studenttopartnermappings',
+  '15': 'partnersheetindex',
+  '16': 'selectedcolumnsfrompartnerspreadsheet',
+  '17': 'rejectedpartners',
+  '18': 'rejectedstudents',
+  '19': 'starredstudents',
+  '20': 'renamedpartnercolumns',
+  '21': 'renamedstudentcolumns',
+  '22': 'sheetsconfigured',
+  '23': 'activatedworkspace',
+  '24': 'save',
+  '25': 'del'
+}
 */
-const staffInputsSheet = ["Staff Inputs", ["Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL",
-												 "Org Name", "Org Link", "Selected Spreadsheet Columns", "Partner Sheet Index",
-												 "Student Sheet Index", "Student Applied to Index", "Updates",
-												"Rejected Partners", "Rejected Students", "Starred Students"]];
-const studentInputsSheet = ["Student Inputs", ["Student Email", "Confirmation if Accepted"]];
-const partnerInputsSheet = ["Partner Inputs", ["Partner Email", "Project", "Lead", "Hash Identifier", "Hashed Password", "Application Reviews"]];
+
+//If any mappings are incorrect, instead of error-breaking, the app should return no values
+//JSON.parse values
+const staffInputsSheet = ["Staff Inputs", [	//String: credentials
+											//configured on creation
+											"Staff Email", "Staff Password", "Workspace Name", "Student Sheet URL", "Partner Sheet URL",
+											//String: navbar banner name & link
+											//configurable in Staff/ConfigureBanner
+											"Org Name", "Org Link",
+											//Dict: homepage, key=(Timestamp), values=(title, message)
+											//configurable in home
+											"Updates",
+											//List of strings: values of the gsheet columns to use for indexing upon retrieval
+											//configurable in Staff/ConfigureSheets
+											"Student Sheet Index", "Selected Columns from Student Spreadsheet", "Student to Partner Mappings",
+											//List of strings: values of the gsheet columns to use for indexing upon retrieval
+											//configurable in Staff/ConfigureSheets
+											"Partner Sheet Index", "Selected Columns from Partner Spreadsheet",
+											//List of strings: emails (partner/student sheet indexer) of prescreened individuals
+											//configurable in Staff/Screening
+											"Rejected Partners", "Rejected Students", "Starred Students",
+											//Dict: renamed columns for user display on client-side, key=gsheet column values, values=renamed values
+											//configurable in Staff/ConfigureSheets
+											"Renamed Partner Columns", "Renamed Student Columns",
+											//Boolean: values based on whether partner/student sheets have been configured and if workspace is active
+											//configured in Staff/ConfigureSheets and Staff/
+											"Sheets Configured", "Activated Workspace"]];
+const studentInputsSheet = ["Student Inputs", ["Student Email", "Student Password", "Student Name", "Confirmation if Accepted"]];
+const partnerInputsSheet = ["Partner Inputs", ["Partner Email", "Partner Password", "Partner Name", "Project Name", "Project Hash Identifier", "Application Reviews"]];
 
 
 
@@ -217,6 +246,8 @@ io.on('connection', function(socket){
 
 	//if made it to loginSubmitted, then we know that the workspace was correct, and we now have group info
 	//not a problem if someone tries to spoof email and workspace -- without password they can't access info
+	//to extend to gmail login, just wrap everything below in its own function and make sure data parameters are the same
+	//or cp it and modify
 	socket.on("loginSubmitted", function(data){
 		let workspace = data.workspace;
 		let group = data.group;
@@ -245,7 +276,7 @@ io.on('connection', function(socket){
 					    }
 					    //use as key for now
 					    console.log(columns);
-	//CURR
+
 					    if(group === "Staff"){
 							if(rows[0][columns[5]]===password && rows[0][columns[4]]===email){
 								//full function for 
@@ -310,6 +341,13 @@ io.on('connection', function(socket){
 		console.log('from loggedin socket listener: ' + data.email);
 		sendPartnerSpreadsheet(socket, data.email);
  
+
+
+
+
+
+
+
 	});
 
 	socket.on('workspaceSubmitted', function(data){
@@ -326,7 +364,7 @@ io.on('connection', function(socket){
 
 //-------------- CreateStep1.js --------------
 	socket.on("createStep1_p1", function(data){
-		let urlStaff = parseURL(data.url);
+		let urlStaff = data.url;
 
 		checkSheetSharing("sheetShared", urlStaff, socket);
 
@@ -334,7 +372,7 @@ io.on('connection', function(socket){
 
 	socket.on("createStep1_p2", function(data){
 		let sharing = data.sharing;
-		let urlStaff = parseURL(data.url);
+		let urlStaff = data.url;
 		let name = data.name;
 
 		console.log("Sharing: " + sharing);
@@ -353,8 +391,6 @@ io.on('connection', function(socket){
 			workspaceOK = false;
 		}
 
-		//should have put urlStaff into unfinishedURLs
-		console.log()
 		staffOK = urlConditions("urlStatus", urlStaff, sharing, socket);
 
 		console.log("workspaceOK: " + workspaceOK);
@@ -362,12 +398,19 @@ io.on('connection', function(socket){
 		console.log(workspaceOK && staffOK);
 
 		if(staffOK && workspaceOK){
-			unfinishedWorkspaces[name] = [socket.id, [urlStaff, "temp student", "temp partner"]];
+			unfinishedWorkspaces[name] = [socket.id, [parseURL(urlStaff), "temp student", "temp partner"]];
 			socket.emit("approved", {msg: "Workspace and URL both valid!"})
 
 
 			console.log("the workspace stuff created from step1 is...")
 			console.log(unfinishedWorkspaces[name]);
+		} else{
+			//delete the URL saved from URL Conditions
+			//this may be important if someone forgot to share privileges, and needs to resubmit after sharing
+			//if the unfinishedURLs wasn't deleted, then it's taken in memory, and no one can access it anymore
+			//problem because delete for unfinishedURL would never have been called
+			delete unfinishedURLs[parseURL(staffURL)];
+			//unfinishedWorkspaces has nothing in it yet
 		}
 
 
@@ -379,8 +422,8 @@ io.on('connection', function(socket){
 
 
 	socket.on("createStep2_p1", function(data){
-		let urlPartner = parseURL(data.urlPartner);
-		let urlStudent = parseURL(data.urlStudent);
+		let urlPartner = data.urlPartner;
+		let urlStudent = data.urlStudent;
 
 		checkSheetSharing("partnerShared", urlPartner, socket);
 		checkSheetSharing("studentShared", urlStudent, socket);
@@ -388,11 +431,10 @@ io.on('connection', function(socket){
 	});
 
 	socket.on("createStep2_p2", function(data){
-
 		let partnerSharing = data.partnerSharing;
-		let urlPartner = parseURL(data.urlPartner);
+		let urlPartner = data.urlPartner;
 		let studentSharing = data.studentSharing;
-		let urlStudent = parseURL(data.urlStudent);
+		let urlStudent = data.urlStudent;
 		let name = activeUsers[socket.id];
 
 		console.log("urlPartner: " + urlPartner);
@@ -407,20 +449,25 @@ io.on('connection', function(socket){
 		}
 
 
-		if(partnerOK && studentOK && (urlPartner !== urlStudent)){
+		if(partnerOK && studentOK && (parseURL(urlPartner) !== parseURL(urlStudent))
+			&& (parseURL(urlPartner) !== "fakeURL" && parseURL(urlStudent) !== "fakeURL") ){
 			let prevs = unfinishedWorkspaces[name];
 			let socketID = prevs[0];
 			let urls = prevs[1];
 
 			//update urls values
-			urls[1] = urlStudent;
-			urls[2] = urlPartner;
+			urls[1] = parseURL(urlStudent);
+			urls[2] = parseURL(urlPartner);
 
 			unfinishedWorkspaces[name] = [socketID, urls];
 			socket.emit("approved", {msg: "Both URLs are valid!"})
 
 			console.log("the workspace stuff created from step2 is...")
 			console.log(unfinishedWorkspaces[name]);
+		}
+		else{
+			delete unfinishedURLs[parseURL(urlPartner)];
+			delete unfinishedURLs[parseURL(urlStudent)];
 		}
 	});
 
@@ -485,23 +532,24 @@ io.on('connection', function(socket){
 			deleteSheetsForInitialization(studentURL);
 			deleteSheetsForInitialization(partnerURL);
 
+			//make sure this block runs together
 			setTimeout(function(){
 				//HOWE
 				//when these sheets are setup, their url must be recorded, as I do below.
 				//urlDictionary[urls] below should be removed after
-				setupStaffSheet(staffURL, staffData);
-				setupStudentSheet(studentURL);
-				setupPartnerSheet(partnerURL);
+				setupStaffSheet(staffURL, staffData, false);
+				setupStudentSheet(studentURL, {}, false);
+				setupPartnerSheet(partnerURL, {}, false);
 
 				setTimeout(function(){
 					//timeouts set to 0 here because they're already wrapped into a timeout
-					updateURLTimes(staffURL, 2500);
-					updateURLTimes(studentURL, 2500);
-					updateURLTimes(partnerURL, 2500);
+					updateURLTimes(staffURL, 0);
+					updateURLTimes(studentURL, 0);
+					updateURLTimes(partnerURL, 0);
 
 					workspaceDictionary[name] = staffURL;
 					writeWorkspaceData();
-				}, 600);
+				}, 2500);
 			}, 1000);
 
 
@@ -561,21 +609,40 @@ function compareURLTimes(url, gsheet){
 }
 
 
-
 //HOWE
 //we've already passed the url through a parser, but we need to check if the
 //parser was ok
 function checkURL(url){
-	return true;
+	let regex = new RegExp("(?<=.com/spreadsheets/d/).*/");
+	let test1 = regex.test(url);
+	if(test1){
+		let match = regex.exec(url)[0];
+		if(match.length === 45){
+			return true;
+		}
+	}
+	return false;
 }
 
-//HOWE
+
 function parseURL(url){
-	return url;
+	let regex = new RegExp("(?<=.com/spreadsheets/d/).*/");
+
+	if(checkURL(url)){
+		let match = regex.exec(url)[0];
+		let matchFinal = match.substring(0, match.length - 1);
+		// console.log(matchFinal);
+		console.log("did it make it in here?");
+		return matchFinal;
+	} else{
+		return "fakeURL";
+	}
 }
+
 
 //this will store ANY url recently submitted into a temporary memory space, which is cleared on disconnect
-function unusedURL(url, sid){
+function unusedURL(urlUnparsed, sid){
+	let url = parseURL(urlUnparsed);
 	console.log("inside unusedURL. The URL is: " + url);
 	console.log(urlDictionary[url]);
 	if(urlDictionary[url]){
@@ -608,7 +675,7 @@ function unusedURL(url, sid){
 //Called for socket emissions in CreateStep1.js
 //Checks gsheet for sharing privileges... FURTHERMORE deletes any existing sheets
 function checkSheetSharing(event, url, socket){
-	let gsheet = new GoogleSpreadsheet(url);
+	let gsheet = new GoogleSpreadsheet(parseURL(url));
 	console.log("In checkSheetSharing");
 	console.log("URL in checkSheetSharing is: " + url);
 
@@ -626,9 +693,7 @@ function checkSheetSharing(event, url, socket){
 }
 
 
-function deleteSheetsForInitialization(url){
-	console.log("inside checkSheetSharing, about to delete any existing wsheets if found");
-	
+function deleteSheetsForInitialization(url){	
 	let gsheet = new GoogleSpreadsheet(url);
 
 	gsheet.useServiceAccountAuth(creds, function (err) {
@@ -709,7 +774,7 @@ function urlConditions(event, url, sharing, socket){
 //sloppy reconfigs of the workspace so we don't break anything
 //A lot of edge cases to think about
 //to generalize function for extendability to other persistences in partner/student
-function persistenceCreated(gSheet, addSheetsList){
+function persistenceCreated(gSheet, addSheetsList, firstCalled){
 	//addSheetsList will be structured as: [wsName, [headers for wsName]];
 
 	let wsName = addSheetsList[0];
@@ -724,16 +789,18 @@ function persistenceCreated(gSheet, addSheetsList){
 		}
 	}
 
-	console.log("Added headers to worksheet: " + headersArray);
-	gSheet.addWorksheet({title: wsName, headers: headersArray}, function(err){});
-	
+	if(firstCalled === false){
+		console.log("Added headers to worksheet: " + headersArray);
+		gSheet.addWorksheet({title: wsName, headers: headersArray}, function(err){});
+	}
+
 	return false;
 }
 
 //see if sheets will setup without timeout
 //NOTE: accesses and modifies sheet, must record new timestamp in urlDictionary
 // setupStaffSheet(staffURL, {email: email, password: password, studentURL: studentURL, partnerURL: partnerURL});
-function setupStaffSheet(staffURL, data){
+function setupStaffSheet(staffURL, data, firstCalled){
 	let staffGsheet = new GoogleSpreadsheet(staffURL);
 
 	// Authenticate with the Google Spreadsheets API.
@@ -743,13 +810,13 @@ function setupStaffSheet(staffURL, data){
 	  staffGsheet.getInfo(function (err) {
 	  	console.log("Inside setupStaffSheet");
 
-	  	if (!persistenceCreated(staffGsheet, staffInputsSheet)){
+	  	if (!persistenceCreated(staffGsheet, staffInputsSheet, firstCalled)){
 	  		console.log("Staff Inputs is being created");
 
 	  		//more efficient means of ensuring that the server isn't being spammed
 	  		setTimeout(function(){
-	  			setupStaffSheet(staffURL, data);
-	  		}, 600);
+	  			setupStaffSheet(staffURL, data, true);
+	  		}, 1000);
 	  	} else{
 		  	//Adding data to the worksheet!
 	  		console.log("Staff Inputs has been created");;
@@ -764,7 +831,7 @@ function setupStaffSheet(staffURL, data){
 //see if sheets will setup without timeout
 //NOTE: accesses and modifies sheet, must record new timestamp in urlDictionary
 //data not configured in this stage
-function setupStudentSheet(studentURL, data){
+function setupStudentSheet(studentURL, data, firstCalled){
 	let studentGsheet = new GoogleSpreadsheet(studentURL);
 
 	// Authenticate with the Google Spreadsheets API.
@@ -774,7 +841,7 @@ function setupStudentSheet(studentURL, data){
 	  studentGsheet.getInfo(function (err) {
 	  	console.log("Inside setupStudentSheet");
 
-	  	if (!persistenceCreated(studentGsheet, studentInputsSheet)){
+	  	if (!persistenceCreated(studentGsheet, studentInputsSheet, firstCalled)){
 	  		console.log("Student Inputs is being created");
 	  	} else{
 	  		console.log("Student Inputs has been created")
@@ -787,7 +854,7 @@ function setupStudentSheet(studentURL, data){
 //see if sheets will setup without timeout
 //NOTE: accesses and modifies sheet, must record new timestamp in urlDictionary
 //data not configured in this stage
-function setupPartnerSheet(partnerURL, data){
+function setupPartnerSheet(partnerURL, data, firstCalled){
 	let partnerGsheet = new GoogleSpreadsheet(partnerURL);
 
 	// Authenticate with the Google Spreadsheets API.
@@ -798,7 +865,7 @@ function setupPartnerSheet(partnerURL, data){
 	  	console.log("Inside setupStaffSheet");
 
 	  	//hashed identifier for the visualizations... created out of hashing the partner's email with their password + three URLs
-	  	if (!persistenceCreated(partnerGsheet, partnerInputsSheet)){
+	  	if (!persistenceCreated(partnerGsheet, partnerInputsSheet, firstCalled)){
 	  		console.log("Partner Inputs is being created");
 	  	} else{
 	  		console.log("Partner Inputs has been created")

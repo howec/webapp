@@ -27,7 +27,7 @@ class Partners extends Component {
   }
 
   render() {
-  	if(this.props.page == 'Partners'){
+  	if(this.props.page === 'Partners'){
 	    return (
 	    	<div>
 				  <h1> [[Partners]] subpage from STAFF. </h1>
