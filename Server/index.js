@@ -35,6 +35,8 @@ TODO:
 		a non-existent wsheet. HOWEVER, must still be careful of getter methods when the clients request data
 		upon login.
 	Create export functionality
+	Student >> Applicant
+	Partner >> Reviewer
 
 
 */
@@ -88,21 +90,22 @@ Staff Inputs -- Columns
   '8': 'partnersheeturl',
   '9': 'orgname',
   '10': 'orglink',
-  '11': 'updates',
-  '12': 'studentsheetindex',
-  '13': 'selectedcolumnsfromstudentspreadsheet',
-  '14': 'studenttopartnermappings',
-  '15': 'partnersheetindex',
-  '16': 'selectedcolumnsfrompartnerspreadsheet',
-  '17': 'rejectedpartners',
-  '18': 'rejectedstudents',
-  '19': 'starredstudents',
-  '20': 'renamedpartnercolumns',
-  '21': 'renamedstudentcolumns',
-  '22': 'sheetsconfigured',
-  '23': 'activatedworkspace',
-  '24': 'save',
-  '25': 'del'
+  '11': 'timelinedates',
+  '12': 'notices',
+  '13': 'studentsheetindex',
+  '14': 'selectedcolumnsfromstudentspreadsheet',
+  '15': 'studenttopartnermappings',
+  '16': 'partnersheetindex',
+  '17': 'selectedcolumnsfrompartnerspreadsheet',
+  '18': 'rejectedpartners',
+  '19': 'rejectedstudents',
+  '20': 'starredstudents',
+  '21': 'renamedpartnercolumns',
+  '22': 'renamedstudentcolumns',
+  '23': 'sheetsconfigured',
+  '24': 'activatedworkspace',
+  '25': 'save',
+  '26': 'del'
 }
 */
 
@@ -114,9 +117,12 @@ const staffInputsSheet = ["Staff Inputs", [	//String: credentials
 											//String: navbar banner name & link
 											//configurable in Staff/ConfigureBanner
 											"Org Name", "Org Link",
+											//Dict: key: deadline type, value: date
+											//configurable in Staff/ConfigureSheets
+											"Timeline Dates",
 											//Dict: homepage, key=(Timestamp), values=(title, message)
 											//configurable in home
-											"Updates",
+											"Notices",
 											//List of strings: values of the gsheet columns to use for indexing upon retrieval
 											//configurable in Staff/ConfigureSheets
 											"Student Sheet Index", "Selected Columns from Student Spreadsheet", "Student to Partner Mappings",
@@ -609,9 +615,6 @@ function compareURLTimes(url, gsheet){
 }
 
 
-//HOWE
-//we've already passed the url through a parser, but we need to check if the
-//parser was ok
 function checkURL(url){
 	let regex = new RegExp("(?<=.com/spreadsheets/d/).*/");
 	let test1 = regex.test(url);
@@ -632,7 +635,6 @@ function parseURL(url){
 		let match = regex.exec(url)[0];
 		let matchFinal = match.substring(0, match.length - 1);
 		// console.log(matchFinal);
-		console.log("did it make it in here?");
 		return matchFinal;
 	} else{
 		return "fakeURL";
@@ -670,6 +672,41 @@ function unusedURL(urlUnparsed, sid){
 	}
 }
 
+
+function urlConditions(event, url, sharing, socket){
+	let urlOK = null;
+
+	//HOWE
+	//Even though we already know if a URL is good or not from part1, this generates the error message for the client
+	if (checkURL(url)){
+		//checks if any of the URLs were recently used
+		if(unusedURL(url, socket.id)){
+			//Howe
+			//sharing is based on client values which were initially passed on from Server. Theoretically susceptible to attack
+			//INSTEAD, it may be better to store these into memory somehow (new or current dictionary?) and load them instead
+			//not important right now. will get back to later as an optimization.
+			if(sharing === true){
+				//Has not officially been stored into memory yet. Sheet sharing privileges must first be verified
+				socket.emit(event, {ok: true, msg: "URL looks good!"});
+				urlOK = true;
+				console.log("URL looks good!");
+			} else{
+				socket.emit(event, {ok: false, msg: "URL has not been shared privileges."})
+				urlOK = false;
+				console.log("URL has not been shared privileges.")
+			}
+		} else{
+			socket.emit(event, {ok: false, msg: "URL has already been used."})
+			urlOK = false;
+			console.log("URL has already been used.")
+		}
+	} else{
+		socket.emit(event, {ok: false, msg: "URL is invalid! Make sure it's a valid link or properly formatted."});
+		urlOK = false;
+		console.log("URL is invalid! Make sure it's a valid link or properly formatted.");
+	}
+	return urlOK;
+}
 
 
 //Called for socket emissions in CreateStep1.js
@@ -715,7 +752,6 @@ function deleteSheetsForInitialization(url){
 	});
 }
 
-
 //Called for socket emissions in CreateStep1.js
 function checkWorkspaceAvailability(name, sock){
 	console.log("Name of the passed in workspace: " + name);
@@ -735,45 +771,6 @@ function checkWorkspaceAvailability(name, sock){
 }
 
 
-function urlConditions(event, url, sharing, socket){
-	let urlOK = null;
-
-	//HOWE
-	//Even though we already know if a URL is good or not from part1, this generates the error message for the client
-	if (checkURL(url)){
-		//checks if any of the URLs were recently used
-		if(unusedURL(url, socket.id)){
-			//Howe
-			//sharing is based on client values which were initially passed on from Server. Theoretically susceptible to attack
-			//INSTEAD, it may be better to store these into memory somehow (new or current dictionary?) and load them instead
-			//not important right now. will get back to later as an optimization.
-			if(sharing === true){
-				//Has not officially been stored into memory yet. Sheet sharing privileges must first be verified
-				socket.emit(event, {ok: true, msg: "URL looks good!"});
-				urlOK = true;
-				console.log("URL looks good!");
-			} else{
-				socket.emit(event, {ok: false, msg: "URL has not been shared privileges."})
-				urlOK = false;
-				console.log("URL has not been shared privileges.")
-			}
-		} else{
-			socket.emit(event, {ok: false, msg: "URL has already been used."})
-			urlOK = false;
-			console.log("URL has already been used.")
-		}
-	} else{
-		socket.emit(event, {ok: false, msg: "URL is invalid! Make sure it's a valid link or properly formatted."});
-		urlOK = false;
-		console.log("URL is invalid! Make sure it's a valid link or properly formatted.");
-	}
-	return urlOK;
-}
-
-//HOWE: May want to make this recreate a sheet instead if the sheet has already been found.... just in case for
-//sloppy reconfigs of the workspace so we don't break anything
-//A lot of edge cases to think about
-//to generalize function for extendability to other persistences in partner/student
 function persistenceCreated(gSheet, addSheetsList, firstCalled){
 	//addSheetsList will be structured as: [wsName, [headers for wsName]];
 
