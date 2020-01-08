@@ -5,7 +5,7 @@ import Table from '../../../components/Table'
 import { Button, Form, Col, FormGroup, Checkbox } from 'react-bootstrap'
 
 
-class ConfigureScreening extends Component {
+class DeleteWorkspace extends Component {
 
   constructor(props){
     super(props);
@@ -30,10 +30,10 @@ class ConfigureScreening extends Component {
 
 
   render() {
-  	if(this.props.page === 'ConfigureScreening'){
+  	if(this.props.page === 'DeleteWorkspace'){
 	    return (
 	    	<div>
-          <h1> inside configure screening </h1>
+          <h1> inside delete workspace </h1>
 
 
 		    </div>
@@ -46,7 +46,7 @@ class ConfigureScreening extends Component {
 }
 
 
-export default ConfigureScreening;
+export default DeleteWorkspace;
 
 
 

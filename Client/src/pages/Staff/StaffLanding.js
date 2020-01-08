@@ -11,6 +11,7 @@ import PartnersSubpage from './subpages/Partners'
 import ConfigureBanner from './subpages/ConfigureBanner'
 import ConfigureSheets from './subpages/ConfigureSheets'
 import ConfigureScreening from './subpages/ConfigureScreening'
+import DeleteWorkspace from './subpages/DeleteWorkspace'
 
 class Staff extends Component {
 
@@ -85,6 +86,12 @@ class Staff extends Component {
     }
   }
 
+  toDeleteWorkspace = () => {
+    if(this.props.loggedIn === true){
+      this.changeState({page: "DeleteWorkspace"});
+    }
+  }
+
 //    let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
 
   render() {
@@ -101,10 +108,12 @@ class Staff extends Component {
               toConfigureBanner = {this.toConfigureBanner}
               toConfigureSheets = {this.toConfigureSheets}
               toConfigureScreening = {this.toConfigureScreening}
+              toDeleteWorkspace = {this.toDeleteWorkspace}
               page = {this.state.page}/>
                 <ConfigureBanner page = {this.state.page} />
                 <ConfigureSheets page = {this.state.page} />
                 <ConfigureScreening page = {this.state.page} />
+                <DeleteWorkspace page = {this.state.page} />
             <StudentsSubpage page = {this.state.page}/>
             <PartnersSubpage page = {this.state.page}/>
           </div>

@@ -17,16 +17,11 @@ Terminology:
 
 TODO:
 	Must add password hashing to both frontend/backend
+	Workspace length checks + special characters
+	Password length checks + special characters
+	Email validation based on regex
 	On the topic of security, may want to consider hmacs, encryption, etc. //Confidentiality, Authenticity
-	Integrity solution: For all sheet modifications, the last modified time MUST be recorded for security purposes.
-		If a person obtained access to workspace sheets and has maliciously modified the column/row values, the next
-		calls for this workspace will VERY LIKELY break the server if there is no check on last modified time
-		made by the server to guarantee the data's integrity. In the case that the data has been tampered with,
-		the server needs to refuse client calls out of self-preservation. Theoretically this is not foolproof, but
-		it is a lot better than a naive implementation. A better implementation would be to see WHO last modified
-		the sheet, but it does not look like that is possible for now. An alternative would be to hash everything
-		and store that value in URLDictionary instead of the time. It's an easy fix, but would require a lot
-		more work.
+	Integrity solution: Store hashes of the gsheet
 	Function to restore/reset password... only for the backend
 	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
 	Less worried about doing this in account creation, though it is theoretically possible that someone jams
@@ -60,12 +55,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-
 app.use(router);
 
 
 server.listen(PORT, () => console.log('Server has started on port ' + PORT));
 
+
+const hash = require('object-hash');
 //CODE HERE:
 /*
 Global variables ----------------------------------------------
@@ -272,7 +268,7 @@ io.on('connection', function(socket){
 			staffSheet.getInfo(function(err){
 			let staffIndex = getWsheetIndex(staffSheet, staffInputsSheet[0]);
 
-				if(staffIndex !== null && compareURLTimes(staffURL, staffSheet) === true){
+				if(staffIndex !== null && compareURLHash(staffURL, staffSheet) === true){
 				 	staffSheet.getRows(staffIndex, function (err, rows){
 					  	let columns = {};
 					  	var count = 0;
@@ -320,6 +316,7 @@ io.on('connection', function(socket){
 						}
 					});
 				} else{
+					//fails upon modified sheet
 					socket.emit("loginValidation", {valid: false});
 				}
 			});
@@ -549,22 +546,15 @@ io.on('connection', function(socket){
 
 				setTimeout(function(){
 					//timeouts set to 0 here because they're already wrapped into a timeout
-					updateURLTimes(staffURL, 0);
-					updateURLTimes(studentURL, 0);
-					updateURLTimes(partnerURL, 0);
+					updateURLHash(staffURL, 0);
+					updateURLHash(studentURL, 0);
+					updateURLHash(partnerURL, 0);
 
 					workspaceDictionary[name] = staffURL;
 					writeWorkspaceData();
 				}, 2500);
 			}, 1000);
 
-
-			// //HOWE: must change these values to last edited for security purposes
-			// //updateURLData function calls should be made here instead
-			// urlDictionary[staffURL] = name;
-			// urlDictionary[studentURL] = name;
-			// urlDictionary[partnerURL] = name;
-			// writeURLData();
 
 	
 			//removes unfinished urls after transferring them to urlDictionary
@@ -587,13 +577,15 @@ io.on('connection', function(socket){
 
 //MUST call this whenever a method mutates a googlesheet
 //set timeout=0 if you want .getInfo() immediately
-function updateURLTimes(url, timeout){
+function updateURLHash(url, timeout){
 	let gsheet = new GoogleSpreadsheet(url);
 
 	gsheet.useServiceAccountAuth(creds, function (err) {
 		setTimeout(function(){
 			gsheet.getInfo(function(err){
-				urlDictionary[url] = gsheet.info.updated;
+				// urlDictionary[url] = gsheet.info.updated;
+				console.log(gsheet);
+				urlDictionary[url] = hash(gsheet);
 				writeURLData();
 			});
 		}, timeout);
@@ -603,10 +595,10 @@ function updateURLTimes(url, timeout){
 //function to compareURLTimes of any sheet you are trying to access
 //if the times do not match, abort accessing the sheet to prevent the server from crashing
 //the times matching are our only guarantee of the data's integrity
-function compareURLTimes(url, gsheet){
-	console.log("inside compareURLTimes");
+function compareURLHash(url, gsheet){
+	console.log("inside compareURLHash");
 
-	if(urlDictionary[url] === gsheet.info.updated){
+	if(urlDictionary[url] === hash(gsheet) ){
 		console.log("urlDictionary matched");
 		return true;
 	} else{
@@ -676,8 +668,6 @@ function unusedURL(urlUnparsed, sid){
 function urlConditions(event, url, sharing, socket){
 	let urlOK = null;
 
-	//HOWE
-	//Even though we already know if a URL is good or not from part1, this generates the error message for the client
 	if (checkURL(url)){
 		//checks if any of the URLs were recently used
 		if(unusedURL(url, socket.id)){

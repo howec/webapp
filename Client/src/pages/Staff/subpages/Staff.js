@@ -39,25 +39,34 @@ class Staff extends Component {
 
 
           <Row>
-            <p style={{marginTop: "10px", marginBottom: "3px"}}> Click <i>"Configure Sheets"</i> to finish setting up your workspace for use.</p>
+            <p style={{marginTop: "10px", marginBottom: "4px"}}> Click <i>"Configure Sheets"</i> to finish setting up your workspace for use.</p>
           </Row>          
           <Row>
             <Button onClick = {this.props.toConfigureSheets}>Configure Sheets</Button> 
           </Row>
 
           <Row>
-            <p style={{marginTop: "10px", marginBottom: "3px"}}>Click <i>"Configure Screenings"</i> to screen partners and students in advance.</p>
+            <p style={{marginTop: "10px", marginBottom: "4px"}}>Click <i>"Configure Screenings"</i> to screen partners and students in advance.</p>
           </Row>
           <Row>
             <Button onClick = {this.props.toConfigureScreening}>Configure Screenings</Button> 
           </Row>
 
           <Row>
-            <p style={{marginTop: "10px", marginBottom: "3px"}}>Click <i>"Configure Settings"</i> to change the banner in your Navigation Bar.</p>
+            <p style={{marginTop: "10px", marginBottom: "4px"}}>Click <i>"Configure Settings"</i> to change the banner in your Navigation Bar.</p>
           </Row>
           <Row>
             <Button onClick = {this.props.toConfigureBanner}>Configure Banner</Button> 
           </Row>
+
+          <Row>
+            <p style={{marginTop: "10px", marginBottom: "4px"}}>Click <i>"Delete Workspace"</i> to permanently delete your workspace.</p>
+          </Row>
+          <Row>
+            <Button onClick = {this.props.toDeleteWorkspace}>Delete Workspace</Button> 
+          </Row>
+
+
 
 		    </div>
 	    )
