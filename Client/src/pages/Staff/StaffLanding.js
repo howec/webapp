@@ -11,7 +11,7 @@ import PartnersSubpage from './subpages/Partners'
 import ConfigureBanner from './subpages/ConfigureBanner'
 import ConfigureSheets from './subpages/ConfigureSheets'
 import ConfigureScreening from './subpages/ConfigureScreening'
-import DeleteWorkspace from './subpages/DeleteWorkspace'
+import ConfigureWorkspace from './subpages/ConfigureWorkspace'
 
 class Staff extends Component {
 
@@ -27,7 +27,7 @@ class Staff extends Component {
   _isMounted=false;
   
   componentDidMount(){
-   this._isMounted=true;
+    this._isMounted=true;
   }
 
   componentWillUnmount(){
@@ -86,20 +86,30 @@ class Staff extends Component {
     }
   }
 
-  toDeleteWorkspace = () => {
+  toConfigureWorkspace = () => {
     if(this.props.loggedIn === true){
-      this.changeState({page: "DeleteWorkspace"});
+      this.changeState({page: "ConfigureWorkspace"});
     }
   }
+
+  onSignOut = () => {
+    this.changeState({page: "Home"});
+    this.props.onSignOut();
+  }
+
 
 //    let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
 
   render() {
-  	if(this.props.group === 'Staff'){
+  	if(this.props.loggedIn === true && this.props.group === 'Staff'){
 	    return (
 	    	<div>
           <div>
-		        <NavigationBar url = {this.props.url} loggedIn = {this.props.loggedIn} onSignOut = {this.props.onSignOut} navbarItems = {[[this.toHome, "Home"], [this.toStaff, "Staff"], [this.toPartners, "Partners"], [this.toStudents, "Students"]]}/>
+		        <NavigationBar
+            url = {this.props.url}
+            loggedIn = {this.props.loggedIn}
+            onSignOut = {this.onSignOut}
+            navbarItems = {[[this.toHome, "Home"], [this.toStaff, "Staff"], [this.toPartners, "Partners"], [this.toStudents, "Students"]]}/>
 				  </div>
 
           <div style = {{margin: "50px"}}>
@@ -108,12 +118,15 @@ class Staff extends Component {
               toConfigureBanner = {this.toConfigureBanner}
               toConfigureSheets = {this.toConfigureSheets}
               toConfigureScreening = {this.toConfigureScreening}
-              toDeleteWorkspace = {this.toDeleteWorkspace}
+              toConfigureWorkspace = {this.toConfigureWorkspace}
               page = {this.state.page}/>
-                <ConfigureBanner page = {this.state.page} />
+                <ConfigureBanner
+                  url = {this.props.url}
+                  page = {this.state.page} 
+                  changeBannerNameURL = {this.props.changeBannerNameURL} />
                 <ConfigureSheets page = {this.state.page} />
                 <ConfigureScreening page = {this.state.page} />
-                <DeleteWorkspace page = {this.state.page} />
+                <ConfigureWorkspace page = {this.state.page} />
             <StudentsSubpage page = {this.state.page}/>
             <PartnersSubpage page = {this.state.page}/>
           </div>

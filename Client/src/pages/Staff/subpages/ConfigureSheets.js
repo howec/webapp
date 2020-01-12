@@ -16,6 +16,8 @@ class ConfigureSheets extends Component {
   
   componentDidMount(){
    this._isMounted=true;
+
+   socket.emit("configureSheets", {});
   }
 
   componentWillUnmount(){
@@ -27,6 +29,8 @@ class ConfigureSheets extends Component {
       this.setState(data)
     }
   }
+
+
 
 
   render() {

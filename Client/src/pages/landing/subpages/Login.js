@@ -56,8 +56,8 @@ class Login extends Component {
     socket.on('loginValidation', (arg) => {
       if(arg.valid === true){
 
-        //HOWE replace null values
-        this.props.onLogIn(this.state.group, null, null);
+        let bannerStuff = arg.bannerStuff
+        this.props.onLogIn(this.state.group, bannerStuff, null);
       } else{
         console.log("Login validation failed");
       }

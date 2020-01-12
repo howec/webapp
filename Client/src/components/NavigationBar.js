@@ -34,8 +34,7 @@ class NavigationBar extends Component {
 	  			);
 	  	}
 	  	return navbar;
-  }
-
+  	}
   }
 
   render() {
@@ -72,8 +71,6 @@ class NavigationBar extends Component {
 		    </nav>
 
 		</div>
-
-
   		)
   	}
   	else{

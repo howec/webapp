@@ -36,6 +36,11 @@ class App extends Component{
     }
   }
 
+  changeBannerNameURL = (name, url) => {
+    let urlStuff = [name, url];
+    this.changeState({url:urlStuff});
+  }
+
   setData = (d) =>{
     this.changeState({data: d});
   }
@@ -45,34 +50,32 @@ class App extends Component{
     this.changeState({group: g});
   }
 
+
+  //data currently not set... does it need to be set on login?
   onLogIn = (group, urlList, data) => {
-    //urlList and data currently not set
-    let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
+
     this.changeState({logsign: "Normal"});
-    this.changeState({url: urlStuff}); // HOWE
+    this.changeState({url: urlList}); // HOWE
     this.changeState({loggedIn: true});
     this.changeState({group: group});
-
 
     this.changeState({data: data});//HOWE
   }
 
   onSignIn = (googleUser) => {
-    //should I be configuring a "group?"
     this.changeState({logsign: "Google"});
 
 
-    //!!!!!TODO: need to make a function to get the url stuff, input from staff
+    //!!!!!HOWE: need to make a function to get the url stuff, input from staff
     let urlStuff = ["UC Berkeley Data Science", "https://data.berkeley.edu"];
     this.changeState({url: urlStuff});
 
+
     console.log("SignedIn");
     this.changeState({loggedIn: true});
-    console.log("signed in! " + this.state.loggedIn);
-            console.log("URL: " + this.state.url);
 
 
-    //!!!!!TODO: some function to tell you what group the person belongs in
+    //!!!!!HOWE: some function to tell you what group the person belongs in
     this.changeState({group: "Staff"})
     console.log("new group is: " + this.state.group);
     console.log("signed in! " + this.state.loggedIn);
@@ -85,10 +88,8 @@ class App extends Component{
     console.log('Given Name: ' + this.state.profile.getGivenName());
     console.log('Email: ' + this.state.profile.getEmail()); // This is null if the 'email' scope is not present.
 
-    console.log("Entered console.... "  + this.state.loggedIn);
 
     //HOWE: this should actually be the authentication stuff
-    //login emission here... this is BEFORE any authentication
     socket.emit("gLoginSubmitted", {email: this.state.profile.getEmail()});
 
     socket.on("sendingattempt", (data) =>{
@@ -97,9 +98,9 @@ class App extends Component{
         this.changeState({data: data["attempt"]});
         console.log("From within the set state.... " + JSON.stringify(this.state.data));
 
-    });
-    //function to get the corresponding row entry from the appropriate sheet
+        //within set state
 
+    });
   }
 
 
@@ -146,8 +147,9 @@ class App extends Component{
           loggedIn = {this.state.loggedIn}
           onLogIn = {this.onLogIn}
           onSignIn = {this.onSignIn}
-          onSignOut = {this.onSignOut} />
+          onSignOut = {null} />
         <StaffLanding
+          changeBannerNameURL = {this.changeBannerNameURL}
           url = {this.state.url}
           group = {this.state.group}
           loggedIn = {this.state.loggedIn}

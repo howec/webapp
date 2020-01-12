@@ -57,15 +57,21 @@ class Students extends Component {
   }
 
 
+  onSignOut = () => {
+    this.changeState({page: "Home"});
+    this.props.onSignOut();
+  }
+
+
   render() {
-  	if(this.props.group == 'Students'){
+  	if(this.props.loggedIn === true && this.props.group == 'Students'){
 	    return (
 	    	<div>
           <div>
             <NavigationBar
               url = {this.props.url}
               loggedIn = {this.props.loggedIn}
-              onSignOut = {this.props.onSignOut}
+              onSignOut = {this.onSignOut}
               navbarItems = {[[this.toHome, "Home"], [this.toApplications, "Applications"], [this.toProfile, "Profile"]]}/>
 				  </div>
 

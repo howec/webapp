@@ -54,18 +54,23 @@ class Partners extends Component {
     }
   }
 
+  onSignOut = () => {
+    this.changeState({page: "Home"});
+    this.props.onSignOut();
+  }
+
   //for any data that is modified in the subpages... then it'll be important to create a refresh cycle where sockets
   //in the front end cause a socket in the back to emit to a listener in the front, set a state, and refresh
   //the page.
   render(){
-  	if(this.props.group == 'Partners'){
+  	if(this.props.loggedIn === true && this.props.group == 'Partners'){
 	    return (
 	    	<div>
           <div>
             <NavigationBar
               url = {this.props.url}
               loggedIn = {this.props.loggedIn}
-              onSignOut = {this.props.onSignOut}
+              onSignOut = {this.onSignOut}
               navbarItems = {[[this.toHome, "Home"], [this.toApplicants, "Applicants"], [this.toProfile, "Profile"]]}/>
 				  </div>
 

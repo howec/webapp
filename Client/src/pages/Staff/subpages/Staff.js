@@ -60,10 +60,10 @@ class Staff extends Component {
           </Row>
 
           <Row>
-            <p style={{marginTop: "10px", marginBottom: "4px"}}>Click <i>"Delete Workspace"</i> to permanently delete your workspace.</p>
+            <p style={{marginTop: "10px", marginBottom: "4px"}}>Click <i>"Configure Workspace"</i> to deactivate or delete your workspace.</p>
           </Row>
           <Row>
-            <Button onClick = {this.props.toDeleteWorkspace}>Delete Workspace</Button> 
+            <Button onClick = {this.props.toConfigureWorkspace}>Configure Workspace</Button> 
           </Row>
 
 

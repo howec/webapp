@@ -16,12 +16,12 @@ Terminology:
 			for use in authentication
 
 TODO:
+	HTTPS encryption
 	Must add password hashing to both frontend/backend
+		https://www.npmjs.com/package/js-sha256
 	Workspace length checks + special characters
 	Password length checks + special characters
 	Email validation based on regex
-	On the topic of security, may want to consider hmacs, encryption, etc. //Confidentiality, Authenticity
-	Integrity solution: Store hashes of the gsheet
 	Function to restore/reset password... only for the backend
 	Lock account creation to only people who are DSEP for now, OR be better at catching bad/null values
 	Less worried about doing this in account creation, though it is theoretically possible that someone jams
@@ -71,7 +71,6 @@ const loggedUsers = {};
 const unfinishedWorkspaces = {};
 const unfinishedURLs = {};
 
-
 /*
 Staff Inputs -- Columns
 {
@@ -88,20 +87,22 @@ Staff Inputs -- Columns
   '10': 'orglink',
   '11': 'timelinedates',
   '12': 'notices',
-  '13': 'studentsheetindex',
-  '14': 'selectedcolumnsfromstudentspreadsheet',
-  '15': 'studenttopartnermappings',
-  '16': 'partnersheetindex',
-  '17': 'selectedcolumnsfrompartnerspreadsheet',
-  '18': 'rejectedpartners',
-  '19': 'rejectedstudents',
-  '20': 'starredstudents',
-  '21': 'renamedpartnercolumns',
-  '22': 'renamedstudentcolumns',
-  '23': 'sheetsconfigured',
-  '24': 'activatedworkspace',
-  '25': 'save',
-  '26': 'del'
+  '13': 'studentdatasheet',
+  '14': 'partnerdatasheet',
+  '15': 'studentsheetindex',
+  '16': 'selectedcolumnsfromstudentspreadsheet',
+  '17': 'studenttopartnermappings',
+  '18': 'partnersheetindex',
+  '19': 'selectedcolumnsfrompartnerspreadsheet',
+  '20': 'rejectedpartners',
+  '21': 'rejectedstudents',
+  '22': 'starredstudents',
+  '23': 'renamedpartnercolumns',
+  '24': 'renamedstudentcolumns',
+  '25': 'sheetsconfigured',
+  '26': 'activatedworkspace',
+  '27': 'save',
+  '28': 'del'
 }
 */
 
@@ -119,6 +120,9 @@ const staffInputsSheet = ["Staff Inputs", [	//String: credentials
 											//Dict: homepage, key=(Timestamp), values=(title, message)
 											//configurable in home
 											"Notices",
+											//String: names of the tab containing application data for Partner/Student 
+											//configurable in Staff/ConfigureSheets
+											"Student Data Tab Name", "Partner Data Tab Name",
 											//List of strings: values of the gsheet columns to use for indexing upon retrieval
 											//configurable in Staff/ConfigureSheets
 											"Student Sheet Index", "Selected Columns from Student Spreadsheet", "Student to Partner Mappings",
@@ -256,9 +260,6 @@ io.on('connection', function(socket){
 		let email = data.email;
 		let password = data.password;
 
-		//should be encapsulated in a login check first:
-		delete activeUsers[socket.id];
-		loggedUsers[socket.id] = data.email;
 
 		let staffURL = workspaceDictionary[workspace];
 		let staffSheet = new GoogleSpreadsheet(staffURL);
@@ -281,12 +282,18 @@ io.on('connection', function(socket){
 
 					    if(group === "Staff"){
 							if(rows[0][columns[5]]===password && rows[0][columns[4]]===email){
-								//full function for 
-								socket.emit("loginValidation", {valid: true, renderdata: null});		
+								//HOWE: you must do this for Student and Partner
+								delete activeUsers[socket.id];
+								loggedUsers[socket.id] = [workspace, group, email];
+
+								let orgName = rows[0][columns[9]];
+								let orgLink = rows[0][columns[10]];
+
+								socket.emit("loginValidation", {valid: true, bannerStuff: [orgName, orgLink]});		
 							} else{
 								socket.emit("loginValidation", {valid: false});
 							}
-					    }else if(group==="Student"){
+					    } else if(group==="Student"){
 					    	let studentURL = rows[0][columns[7]];
 					    	let studentSheet = new GoogleSpreadsheet(studentURL);
 							studentSheet.useServiceAccountAuth(creds, function (err) {
@@ -300,7 +307,7 @@ io.on('connection', function(socket){
 								});
 							});
 
-						}else if(group==="Partner"){
+						} else if(group==="Partner"){
 							let partnerURL = rows[0][columns[8]];
 							let partnerSheet = new GoogleSpreadsheet(partnerURL);
 							partnerSheet.useServiceAccountAuth(creds, function (err) {
@@ -343,13 +350,6 @@ io.on('connection', function(socket){
 		// activeUsers[socket.id] = [socket, data.email]
 		console.log('from loggedin socket listener: ' + data.email);
 		sendPartnerSpreadsheet(socket, data.email);
- 
-
-
-
-
-
-
 
 	});
 
@@ -362,10 +362,65 @@ io.on('connection', function(socket){
 		}
 	});
  
+	//-------- StaffLanding.js --------
+
+		//-------- BannerConfigurations.js --------
+	socket.on("configureBanner", function(data){
+		console.log("Inside configureBanner")
+		//-------- Set data variables
+		let orgName = data.orgName;
+		let orgURL = data.orgURL;
+
+		//--------Set workspace variables
+		let user = loggedUsers[socket.id];
+
+		let workspace = user[0];
+		let group = user[1];
+		let email = user[2];
+
+		let staffURL = workspaceDictionary[workspace];
+		let staffSheet = new GoogleSpreadsheet(staffURL);
+
+		staffSheet.useServiceAccountAuth(creds, function (err) {
+
+			staffSheet.getInfo(function(err){
+			let staffIndex = getWsheetIndex(staffSheet, staffInputsSheet[0]);
+
+				if(staffIndex !== null && compareURLHash(staffURL, staffSheet) === true){
+				 	staffSheet.getRows(staffIndex, function (err, rows){
+					  	let columns = {};
+					  	var count = 0;
+					    for (const key in rows[0]){
+					    	columns[count] = key;
+					    	count = count + 1;
+					    }
+
+					    //just a check
+					    if(group === "Staff"){
+							let orgStuff = {"Org Name": orgName, "Org Link": orgURL};
+							
+							setTimeout(function(){
+	  							getWsheetAndApply(staffSheet, staffInputsSheet[0], modifyStaffCredentials(orgStuff));
+	  							setTimeout(function(){
+	  								staffSheet.getInfo(function(err){
+		  								urlDictionary[staffURL] = hash(staffSheet);
+	  								});
+	  							}, 2000);
+							}, 0)
+
+					    } 
+					});
+				}
+
+			});
+		});
+	});
 
 
 
-//-------------- CreateStep1.js --------------
+
+
+	//-------------- CreateStep1.js --------------
 	socket.on("createStep1_p1", function(data){
 		let urlStaff = data.url;
 
@@ -421,7 +476,7 @@ io.on('connection', function(socket){
 	});
 
 
-//-------------- CreateStep2.js --------------
+	//-------------- CreateStep2.js --------------
 
 
 	socket.on("createStep2_p1", function(data){
@@ -474,7 +529,7 @@ io.on('connection', function(socket){
 		}
 	});
 
-//-------------- CreateStep3.js --------------
+	//-------------- CreateStep3.js --------------
 	socket.on("createStep3_p1", function(data){
 	    let email = data.email;
 	    let password = data.password;
@@ -524,11 +579,13 @@ io.on('connection', function(socket){
 			let studentURL = urls[1];
 			let partnerURL = urls[2];
 			//should create the persistence layers Staff Inputs in staffURL
+
 			console.log("Entering setupStaffSheet...");
 
 
 			let staffData = {"Workspace Name": name, "Staff Email": email, "Staff Password": password,
-								"Student Sheet URL": studentURL, "Partner Sheet URL": partnerURL};
+								"Student Sheet URL": studentURL, "Partner Sheet URL": partnerURL,
+								"Org Name": "Applica", "Org Link": "#"};
 			
 			//Delete any existing sheets with important names...
 			deleteSheetsForInitialization(staffURL);
@@ -575,7 +632,7 @@ io.on('connection', function(socket){
 
 //Start of socket helper functions ----------------------------------------------
 
-//MUST call this whenever a method mutates a googlesheet
+//HOWE: MUST call this whenever a method mutates a googlesheet STAFFINPUTSSHEET
 //set timeout=0 if you want .getInfo() immediately
 function updateURLHash(url, timeout){
 	let gsheet = new GoogleSpreadsheet(url);
@@ -592,9 +649,9 @@ function updateURLHash(url, timeout){
 	});
 };
 
+//IMPORTANT: gsheet parameter must already have called .getInfo() from outside the function call
 //function to compareURLTimes of any sheet you are trying to access
 //if the times do not match, abort accessing the sheet to prevent the server from crashing
-//the times matching are our only guarantee of the data's integrity
 function compareURLHash(url, gsheet){
 	console.log("inside compareURLHash");
 
@@ -808,7 +865,7 @@ function setupStaffSheet(staffURL, data, firstCalled){
 		  	//Adding data to the worksheet!
 	  		console.log("Staff Inputs has been created");;
 	  		
-	  		getWsheetAndApply(staffGsheet, "Staff Inputs", applyCredentials(data));
+	  		getWsheetAndApply(staffGsheet, staffInputsSheet[0], applyCredentials(data));
 	  	}
 
 	  });
@@ -862,10 +919,16 @@ function setupPartnerSheet(partnerURL, data, firstCalled){
 	});
 }
 
+
+//HOWE
 function populatePartnerSheet(partnerURL, data){
 //if persistenceCreated, AND has headers
 }
 
+
+function modifyStaffSheet(){
+
+}
 
 
 //function that retrieves the desired wSheet from the gsheet for you to apply a function on.
@@ -888,6 +951,9 @@ function getWsheetAndApply(gsheet, wsheetName, funcToApply){
 				console.log(worksheet.title);
 				//ensures no null errors
 				if(worksheet.title === wsheetName){
+
+					console.log(worksheet);
+
 					funcToApply(worksheet);
 				}
 			}
@@ -907,7 +973,61 @@ function applyCredentials(data){
 	return addRowToSheet;
 }
 
-//must always call this inside of a .getInfo() call
+
+function modifyStaffCredentials(data){
+	console.log(data);
+	let keyVals = data;
+
+	//ws === wsheet
+	//Pay attention to the pattern
+	modifyCredentials = (ws) =>{
+		console.log("Inside modify credentials");
+		// let rowCount = ws.rowCount;
+		let colCount = ws.colCount;
+
+  		let options = {"min-row": 1, "max-row": 2, "return-empty": true};
+  		ws.getCells(options, function(err, cells){
+
+  			console.log(cells);
+
+
+  			let indexer = 0;
+  			let toApply = [];
+
+  			//go through headers
+  			for (const placeholder in cells){
+  				let cell = cells[indexer];
+
+  				//if the cell.value exists in the keyVals
+  				if(cell.row === 1 && keyVals[cell.value]){
+	  				console.log("iteration: " + indexer);
+
+  					let saveIndex = [indexer, cell];
+
+  					toApply.push(... [saveIndex]);
+  				}
+  				indexer = indexer + 1;
+  			}
+
+  			console.log("The list of things to apply");
+  			console.log(toApply);
+  			for(count = 0; count<toApply.length; count++){
+  				//IMPORTANT: must add by colCount*rowNumber!
+  				let index = toApply[count][0] + colCount*1;
+  				let cell = toApply[count][1];
+
+  				cells[index].setValue(keyVals[cell.value], function callback(){
+  					console.log("the credential should have been modified by now");
+  				});
+  			}
+
+  		});
+	}
+
+	return modifyCredentials;
+}
+
+//IMPORTANT: gsheet parameter must already have called .getInfo() from outside the function call
 function getWsheetIndex(gsheet, wsheetName){
 
 		let count = 0;
@@ -921,6 +1041,10 @@ function getWsheetIndex(gsheet, wsheetName){
 		return null;
 }
 
+
+function getCells(){
+
+}
 
 
 //End of socket helper functions ----------------------------------------------
@@ -1072,17 +1196,6 @@ function sendPartnerSpreadsheet(sock, email){
 
 
 
-function sendStudentSpreadsheet(){
-	// Authenticate with the Google Spreadsheets API.
-	studentSheet.useServiceAccountAuth(creds, function (err) {
-
-	  // Get all of the rows from the spreadsheet.
-	  studentSheet.getRows(1, function (err, rows) {
-	    // console.log(rows);
-	  });
-	});
-} 
-
 
 
 //------
@@ -1091,8 +1204,12 @@ var partnerColumns = {};
 //to be instantiated during server startup
 //then whenever 
 function getPartnerColumns(){
+	console.log("Calling from getPartnerColumns");
 	let temp = {}
 
+
+	//NOTE: not partnerSheet, but we'll just call it that
+	let partnerSheet = new GoogleSpreadsheet(staff);
 	// Authenticate with the Google Spreadsheets API.
 	partnerSheet.useServiceAccountAuth(creds, function (err) {
 
@@ -1106,13 +1223,91 @@ function getPartnerColumns(){
 	    }
 	    partnerColumns = temp;
 
+
+	    let index = 5
 	    //partnerColumns now has a value
-		console.log("I've been called");
-		console.log(rows[0][partnerColumns[7]]);
+	    console.log("Values for row")
+	    console.log(rows[0])
+	    console.log("Value for row at index " + index);
+		console.log(rows[0][partnerColumns[index]]);
+		console.log("Partner Columns List")
 		console.log(partnerColumns);
+
+
 	  });
+
+	  // partnerSheet.getCells(1, {}, function(){
+	  // 	console.log(partnerSheet);
+	  // });
+
+	  partnerSheet.getInfo(function(err){
+	  	let ws = partnerSheet.worksheets[0];
+	  	console.log("Worksheet below:");
+	  	console.log(ws);
+
+	  	//linear search of cells where the row and column are a match
+	  	//or indexing based on a mapping of where you want your cell to be found wrt the actual number of rows and columns in sheet
+	  	let options = {"max-row": 1, "return-empty": true};
+	  	// let options = {};
+	  	ws.getCells(options, function(err, cells){
+	  		console.log("Get cells");
+	  		//just cells means that you are printing out ALL the cells, cells[1] is the FIRST cell, including the HEADER row!
+	  		console.log("cell 0");
+	  		console.log(cells[0]);
+
+	  		console.log("cell 1");
+	  		console.log(cells[1]);
+	  	});
+
+
+	  })
+
+	  //need to get a worksheet, then access the cells
+
+	  
+
+	  // let x = partnerSheet.getCells(1);
+	  // console.log(x);
+});
+
+} getPartnerColumns();
+
+
+
+
+
+//IMPORTANT: gsheet parameter must already have called .getInfo() from outside the function call
+function getCellsFromRow(){
+
+}
+
+//belongs in setup partnersheets, should be stored as a dictionary for later use
+function getHeaderColumnIndices(gsheet, wsheetName){
+	let index = getWsheetIndex(gsheet, wsheetName);
+	let ws = gsheet.worksheets[index];
+
+  	let options = {"max-row": 1, "return-empty": true};
+	ws.getCells(options, function(err, cells){
+
+		let indexer = 0;
+		let headers = {}
+		for(const cell in cells){
+			if(cell.value!==""){
+				headers[cell.value] = indexer;
+			}
+			indexer = indexer + 1;
+		}
+		//at the end, should have the index of the headers... this should be an emission
 	});
-} //getPartnerColumns();
+}
+
+function getRowNumberFromKey(rows){
+
+}
+
+function numColumns(rows){
+	return Object.keys(rows[0]).length-6;
+}
 
 
 

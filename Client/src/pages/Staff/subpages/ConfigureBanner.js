@@ -9,6 +9,7 @@ class ConfigureBanner extends Component {
 
   constructor(props){
     super(props);
+    // this.state = {name: this.props.url[0], url: this.props.url[]};
 
   }
 
@@ -28,8 +29,26 @@ class ConfigureBanner extends Component {
     }
   }
 
-  formSubmit = () =>{
-    socket.emit();
+
+  //HOWE: not working! need to make sure that I am updating CELLS, because currently I've only
+  //been adding rows
+  //also, setting url to "data.berkeley.edu" takes me to "localhost:3000/data.berkeley.edu" for
+  //whatever reason
+  formSubmit = (event) =>{
+    event.preventDefault();
+
+    console.log("Form submitted");
+
+
+    let name = document.getElementById("OrgName").value;
+    let url = document.getElementById("OrgURL").value;
+
+    console.log("Name is: " + name);
+    console.log("url is: " + url);
+
+
+    socket.emit("configureBanner", {orgName: name, orgURL: url});
+    this.props.changeBannerNameURL(name, url);
   }
 
 
@@ -38,17 +57,17 @@ class ConfigureBanner extends Component {
 	    return (
 	    	<div>
               <Form onSubmit = {this.formSubmit}>
-                <Form.Group controlId="formPartnersSheet">
+                <Form.Group controlId="OrgName">
                   <Form.Label>Organization Name</Form.Label>
-                  <Form.Control required type="text" placeholder="Enter name here" defaultValue = "Some Org" maxLength = {30} style = {{width: "500px"}} />
+                  <Form.Control required type="text" placeholder="Enter name here" defaultValue = {this.props.url[0]} maxLength = {30} style = {{width: "500px"}} />
                   <Form.Text className="text-muted">
                     Enter the name of your organization
                   </Form.Text>
                 </Form.Group>
 
-                <Form.Group controlId="formStudentsSheet">
+                <Form.Group controlId="OrgURL">
                   <Form.Label>Organization URL</Form.Label>
-                  <Form.Control required type="text" placeholder="Enter URL here" maxLength = {100} style = {{width: "500px"}} />
+                  <Form.Control required type="text" placeholder="Enter URL here" defaultValue = {this.props.url[1]} maxLength = {100} style = {{width: "500px"}} />
                   <Form.Text className="text-muted">
                     Enter your organization's website
                   </Form.Text>
