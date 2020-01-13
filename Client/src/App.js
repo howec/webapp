@@ -62,6 +62,11 @@ class App extends Component{
     this.changeState({data: data});//HOWE
   }
 
+
+//Have not fully implemented oauth because I would need to use my own personal email
+//and cc info.
+//I have an alternative account set up, but I need division cc info to configure
+//google developer console access
   onSignIn = (googleUser) => {
     this.changeState({logsign: "Google"});
 
@@ -71,12 +76,22 @@ class App extends Component{
     this.changeState({url: urlStuff});
 
 
+    /*
+    let gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)  
+         .requestIdToken(getString(R.string.server_client_id))  
+         .requestEmail()  
+         .build();  
+    */
+
+
+
+    //HOWE: to change and move below
     console.log("SignedIn");
     this.changeState({loggedIn: true});
 
 
     //!!!!!HOWE: some function to tell you what group the person belongs in
-    this.changeState({group: "Staff"})
+    this.changeState({group: "Partners"})
     console.log("new group is: " + this.state.group);
     console.log("signed in! " + this.state.loggedIn);
 
@@ -92,7 +107,14 @@ class App extends Component{
     //HOWE: this should actually be the authentication stuff
     socket.emit("gLoginSubmitted", {email: this.state.profile.getEmail()});
 
+    //this is where login needs to be configured... dependent on whether the server recognized
+    //sent credentials from client
     socket.on("sendingattempt", (data) =>{
+    //HOWE: to change and move below
+    // console.log("SignedIn");
+    // this.changeState({loggedIn: true});
+
+
       console.log("IN SENDING ATTEMPT");
         console.log(data);
         this.changeState({data: data["attempt"]});

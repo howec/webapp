@@ -32,6 +32,7 @@ class Profile extends Component {
       return (
         <div>
           <h1> [[Profile]] subpage from STUDENTS. </h1>
+          <p> display student's own profile from google form in entirety... future implementation to allow for editing of responses </p>
         </div>
       )
     } else{

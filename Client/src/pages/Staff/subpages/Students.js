@@ -32,6 +32,7 @@ class Students extends Component {
       return (
         <div>
           <h1> [[Students]] subpage from STAFF. </h1>
+          <p> should display a for-loop iteration of every student's view </p>
         </div>
       )
     } else{

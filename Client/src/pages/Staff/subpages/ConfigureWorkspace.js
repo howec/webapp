@@ -34,6 +34,8 @@ class ConfigureWorkspace extends Component {
 	    return (
 	    	<div>
           <h1> inside configure workspace </h1>
+          <p> set up button to deactivate/reactivate, and another to delete.
+            The delete will take the user to a confirmationDelete page before actually deleting the workspace</p>
 
 
 		    </div>

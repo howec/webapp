@@ -33,6 +33,7 @@ class Home extends Component {
 	    return (
 	    	<div>
 				  <h1> [[Home]] subpage from PARTNERS. </h1>
+          <p> display updates from staff... future implementation to allow for direct messaging with limited character count</p>
 		    </div>
 	    )
 		} else {

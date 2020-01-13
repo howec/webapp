@@ -31,6 +31,8 @@ class Partners extends Component {
 	    return (
 	    	<div>
 				  <h1> [[Partners]] subpage from STAFF. </h1>
+          <p> should display a for-loop iteration of every partner's view </p>
+
 		    </div>
 	    )
 		} else{

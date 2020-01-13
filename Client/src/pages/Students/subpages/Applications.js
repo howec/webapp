@@ -31,6 +31,7 @@ class Applications extends Component {
       return (
         <div>
           <h1> [[Applications]] subpage from STUDENTS. </h1>
+          <p> display student's application status decision from partner inputs </p>
         </div>
       )
     } else{

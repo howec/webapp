@@ -32,6 +32,7 @@ class Home extends Component {
 	    return (
 	    	<div>
 				  <h1> [[Home]] subpage from STUDENTS. </h1>
+          <p> display any messages forwarded from staff... future implementation to forward message from partners</p>
 		    </div>
 	    )
 		} else {

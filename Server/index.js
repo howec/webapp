@@ -62,6 +62,11 @@ server.listen(PORT, () => console.log('Server has started on port ' + PORT));
 
 
 const hash = require('object-hash');
+// const moment = require('moment');
+// moment().format();
+//USE DEFAULT DATE OBJECT INSTEAD
+
+
 //CODE HERE:
 /*
 Global variables ----------------------------------------------
@@ -369,7 +374,12 @@ io.on('connection', function(socket){
 		console.log("Inside configureBanner")
 		//-------- Set data variables
 		let orgName = data.orgName;
-		let orgURL = "//" + data.orgURL;
+		let orgURL = data.orgURL;
+
+		if(orgURL.length > 2 && orgURL.substring(0,2) !== "//" && orgURL.substring(0,7)!=="http://" && orgURL.substring(0,8)!=="https://"){
+			let temp = "//" + orgURL;
+			orgURL = temp;
+		}
 
 		//--------Set workspace variables
 		let user = loggedUsers[socket.id];
@@ -585,7 +595,8 @@ io.on('connection', function(socket){
 
 			let staffData = {"Workspace Name": name, "Staff Email": email, "Staff Password": password,
 								"Student Sheet URL": studentURL, "Partner Sheet URL": partnerURL,
-								"Org Name": "Applica", "Org Link": "#"};
+								"Org Name": "Applica", "Org Link": "#",
+								"Sheets Configured": "false", "Activated Workspace" : "true"};
 			
 			//Delete any existing sheets with important names...
 			deleteSheetsForInitialization(staffURL);
@@ -610,7 +621,7 @@ io.on('connection', function(socket){
 					workspaceDictionary[name] = staffURL;
 					writeWorkspaceData();
 				}, 2500);
-			}, 1000);
+			}, 2500);
 
 
 	
@@ -1146,15 +1157,18 @@ function sendStaffSpreadsheet(sock, email){
 
 }
 
-
+//HOWE: totally needs to be reworked... only works for partner for now
 function sendPartnerSpreadsheet(sock, email){
 	// Authenticate with the Google Spreadsheets API.
+	let partners = '1G_va7huCsZGj-iVrk6Ki0PYo9UGE05cGIlfsunrG3Sg';
+	let partnerSheet = new GoogleSpreadsheet(partners);
+
 
 	partnerSheet.useServiceAccountAuth(creds, function (err) {
 
 	  // Get all of the rows from the spreadsheet.
 	  partnerSheet.getRows(1, function (err, rows) {
-	    // console.log(rows);
+	    console.log(rows);
 
 	    //HOWE LOOK HERE
 	    //TODO: add functionality to send to SPECIFIC socket!!!!
@@ -1176,6 +1190,7 @@ function sendPartnerSpreadsheet(sock, email){
 	    let temp = {};
 	    // let selectedColumns = getSelectedColumns()
 	    // console.log(rows[position]);
+	    console.log(rows);
 	    var count = 0;
 		for (const key in rows[0]){
 	    	temp[count] = key;

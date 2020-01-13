@@ -32,6 +32,7 @@ class Home extends Component {
 	    return (
 	    	<div>
 				  <h1> [[Home]] subpage from STAFF. </h1>
+          <p>allow for creation of updates/notices to forward to students/partners</p>
 		    </div>
 	    )
 		} else{

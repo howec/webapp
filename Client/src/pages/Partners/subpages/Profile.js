@@ -34,6 +34,7 @@ class Profile extends Component {
       return (
         <div>
           <h1> [[Profile]] subpage from PARTNERS. </h1>
+          <p> display application data from the google forms in its entirety </p>
           <Table data = {[this.props.data]} />
         </div>
       )
