@@ -91,7 +91,10 @@ class App extends Component{
 
 
     //!!!!!HOWE: some function to tell you what group the person belongs in
+    // this.changeState({group: "Staff"})
     this.changeState({group: "Partners"})
+    // this.changeState({group: "Students"})
+
     console.log("new group is: " + this.state.group);
     console.log("signed in! " + this.state.loggedIn);
 
@@ -149,7 +152,7 @@ class App extends Component{
     if(this.state.logsign === "Normal"){
       return this.nLogOut();
     } else{
-      return this.gSignOut;
+      return this.gSignOut();
     }
   }
 

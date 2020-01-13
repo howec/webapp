@@ -58,6 +58,7 @@ class Students extends Component {
 
 
   onSignOut = () => {
+    console.log("on sign out from StudentsLanding.js")
     this.changeState({page: "Home"});
     this.props.onSignOut();
   }

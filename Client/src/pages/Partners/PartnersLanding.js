@@ -55,6 +55,7 @@ class Partners extends Component {
   }
 
   onSignOut = () => {
+    console.log("on sign out from partnersLanding.js")
     this.changeState({page: "Home"});
     this.props.onSignOut();
   }
