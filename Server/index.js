@@ -369,7 +369,7 @@ io.on('connection', function(socket){
 		console.log("Inside configureBanner")
 		//-------- Set data variables
 		let orgName = data.orgName;
-		let orgURL = data.orgURL;
+		let orgURL = "//" + data.orgURL;
 
 		//--------Set workspace variables
 		let user = loggedUsers[socket.id];

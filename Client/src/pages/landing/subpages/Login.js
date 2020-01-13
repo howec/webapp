@@ -115,6 +115,8 @@ class Login extends Component {
             <div className="center-me">
             <Column horizontal='center' flexGrow={1}>
 
+              <Row id="spacer" horizontal='center'>
+              </Row>
 
               <Row horizontal='center'>
                   <h2>Login to your workspace</h2>
